@@ -1,5 +1,8 @@
-package app.xuankai.xhys
+package app.xuankai.xhys.managers
 
+import app.xuankai.xhys.Vault
+import app.xuankai.xhys.XhysMiraiBot
+import app.xuankai.xhys.command_rp
 import app.xuankai.xhys.commands.CommandBase
 import app.xuankai.xhys.commands.CommandJrrp
 import app.xuankai.xhys.mysql.DataMysql
@@ -7,12 +10,16 @@ import app.xuankai.xhys.mysql.FoodBlackList
 import app.xuankai.xhys.mysql.Users
 import app.xuankai.xhys.utils.CommandUtils
 import app.xuankai.xhys.utils.format
+import app.xuankai.xhys.utils.toInputStream
 import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.messageChainOf
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import java.io.File
 
 object CommandMgr {
     fun XhysMiraiBot.baseCommand(){
@@ -27,7 +34,8 @@ object CommandMgr {
                         val text : Message = when{
                             command == "jrrp"-> CommandJrrp.get(this)
                             command.startsWith("rp")-> command_rp(this)
-                            command == "money" -> commandMoney(this)
+                            command == "money" || command == "coin" -> commandMoney(this)
+                            command == "drawcard" || command == "十连" -> commandDrawCard(this)
                             command.startsWith("atetext") -> commandAtetext(this)
                             command.startsWith("nn") -> commandNn(this)
                             command.startsWith("blackfood") -> commandBlackfood(this)
@@ -61,13 +69,14 @@ object CommandMgr {
         return when(command){
             "jrrp" -> CommandJrrp.get(event)
             "money" -> commandMoney(event)
+            "coin" -> commandMoney(event)
             else -> CommandBase.getCommand(command) ?: PlainText("Error")
         }
     }
 
     private fun commandMoney(msg : MessageEvent) : Message{
         val result = Users.findByQQId(msg.source.fromId)
-        val money = result.money
+        val money = result.money!! - result.usedMoney
         val name = result.nick ?: msg.senderName
         return PlainText("${name},你已经存了${money}枚硬币啦!")
     }
@@ -132,5 +141,14 @@ object CommandMgr {
         DataMysql.executeSql("delete from foodblacklist where eatStr='${value}'")
         XhysMiraiBot.foodBlackList.remove(value)
         return PlainText("${name},你成功花费10枚硬币把${value}从食物黑名单去掉了！")
+    }
+
+    private suspend fun commandDrawCard(msg : MessageEvent): Message{
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+        if(!Vault.cost(result.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
+        val stream = CardMgr.getTenCards(name, result.qqId, msg.source.sender.avatarUrl).toInputStream()
+        return messageChainOf(PlainText("${name},你成功花费100枚硬币进行了一次十连！"),
+            stream.uploadAsImage(msg.subject))
     }
 }

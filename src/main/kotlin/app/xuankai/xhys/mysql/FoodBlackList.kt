@@ -1,6 +1,6 @@
 package app.xuankai.xhys.mysql
 
-class FoodBlackList : ObjectMysql {
+class FoodBlackList : IObjectMysql {
     var id: Int = 0
     var eatStr : String = ""
 

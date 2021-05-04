@@ -3,13 +3,14 @@ package app.xuankai.xhys.mysql
 import java.sql.Date
 import java.time.LocalDate
 
-open class Users() : ObjectMysql {
+open class Users() : IObjectMysql {
     var id: Int = 0
     var qqId: Long = 0
     var nick:String? = null
     var money:Long? = null
     var lastjrrp:LocalDate? = null
     var beAteText:String? = null
+    var usedMoney:Long = 0
 
     val displayName: String
         get() = nick ?: qqId.toString()
@@ -29,6 +30,7 @@ open class Users() : ObjectMysql {
                 lastjrrp = date.toLocalDate()
             }
             "beAteText"->beAteText = value as String?
+            "usedMoney" -> usedMoney = value as Long
         }
     }
 

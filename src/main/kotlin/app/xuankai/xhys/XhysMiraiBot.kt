@@ -1,9 +1,6 @@
 package app.xuankai.xhys
 
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.alsoLogin
-import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.SingleMessage
 
 object XhysMiraiBot {
     var id : Long = 0L

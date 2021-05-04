@@ -1,5 +1,5 @@
 package app.xuankai.xhys.mysql.enums
 
-enum class CardRarity {
-    N, R, SR, SSR
+enum class CardRarity(val type : String) {
+    R("R"), SR("SR"), SSR("SSR")
 }

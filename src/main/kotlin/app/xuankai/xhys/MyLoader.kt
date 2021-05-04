@@ -1,6 +1,6 @@
 package app.xuankai.xhys
 
-import app.xuankai.xhys.CommandMgr.baseCommand
+import app.xuankai.xhys.managers.CommandMgr.baseCommand
 import app.xuankai.xhys.behaviours.Eat.eat
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.FoodBlackList

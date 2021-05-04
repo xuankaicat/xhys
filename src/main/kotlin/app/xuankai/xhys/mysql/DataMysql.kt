@@ -7,7 +7,7 @@ import java.sql.Statement
 
 
 object DataMysql {
-    val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+    val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
     val username = "root"
     val password = "280814"
 
@@ -21,12 +21,12 @@ object DataMysql {
     }
 
     fun openConnection() :Connection?{
-        try {
-            return DriverManager.getConnection(url, username, password)
+        return try {
+            DriverManager.getConnection(url, username, password)
         } catch (e: Exception) {
             e.printStackTrace()
             println("Mysql连接失败")
-            return null
+            null
         }
     }
 
@@ -47,7 +47,7 @@ object DataMysql {
         closeConnection(conn, stmt)
     }
 
-    inline fun <reified T : ObjectMysql> query(sql: String) : ArrayList<T>{
+    inline fun <reified T : IObjectMysql> query(sql: String) : ArrayList<T>{
         val conn = openConnection()
         val stmt = conn?.createStatement()
         val list : ArrayList<T> = ArrayList()
