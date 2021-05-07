@@ -1,5 +1,7 @@
-package app.xuankai.xhys.mysql
+package app.xuankai.xhys.mysql.model
 
+import app.xuankai.xhys.mysql.DataMysql
+import app.xuankai.xhys.mysql.IObjectMysql
 import java.sql.Date
 import java.time.LocalDate
 

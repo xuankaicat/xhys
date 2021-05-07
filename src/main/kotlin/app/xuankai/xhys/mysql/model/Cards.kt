@@ -1,5 +1,7 @@
-package app.xuankai.xhys.mysql
+package app.xuankai.xhys.mysql.model
 
+import app.xuankai.xhys.mysql.DataMysql
+import app.xuankai.xhys.mysql.IObjectMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 
 open class Cards : IObjectMysql {
@@ -15,7 +17,7 @@ open class Cards : IObjectMysql {
         when(varName){
             "id"->id = value as Int
             "name"->name = value as String
-            "rarity"->rarity = CardRarity.valueOf(value as String)//value as CardRarity
+            "rarity"->rarity = CardRarity.valueOf(value as String)
             "pic"->pic = value as String
             "group"->group = value as String
             "existingAmount"->existingAmount = value as Int

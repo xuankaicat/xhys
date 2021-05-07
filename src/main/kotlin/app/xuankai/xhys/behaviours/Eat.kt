@@ -2,7 +2,7 @@ package app.xuankai.xhys.behaviours
 
 import app.xuankai.xhys.XhysMiraiBot
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.Users
+import app.xuankai.xhys.mysql.model.Users
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages

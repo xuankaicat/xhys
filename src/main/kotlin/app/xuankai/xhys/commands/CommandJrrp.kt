@@ -1,7 +1,7 @@
 package app.xuankai.xhys.commands
 
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.Users
+import app.xuankai.xhys.mysql.model.Users
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.events.MessageEvent

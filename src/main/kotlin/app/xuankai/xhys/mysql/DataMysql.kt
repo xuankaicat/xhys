@@ -7,18 +7,9 @@ import java.sql.Statement
 
 
 object DataMysql {
-    val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
-    val username = "root"
-    val password = "280814"
-
-    init{
-        try{
-            //Class.forName("com.mysql.cj.jdbc.Driver")
-        }catch(e:Exception) {
-            e.printStackTrace()
-            println("Mysql连接失败")
-        }
-    }
+    private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
+    private const val username = "root"
+    private const val password = "280814"
 
     fun openConnection() :Connection?{
         return try {
@@ -70,5 +61,22 @@ object DataMysql {
         }
         closeConnection(conn, stmt)
         return list
+    }
+
+    inline fun <reified T : Any> getValue(sql: String) : T {
+        val conn = openConnection()
+        val stmt = conn?.createStatement()
+        try{
+            val resultSet : ResultSet = stmt!!.executeQuery(sql)
+            resultSet.next()
+            val res = resultSet.getObject(1) as T
+            resultSet.close()
+            return res
+        }catch (e:Exception){
+            e.printStackTrace()
+            println("Mysql查询失败,语句为${sql}")
+        }
+        closeConnection(conn, stmt)
+        return 0 as T
     }
 }

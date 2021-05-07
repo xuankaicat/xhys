@@ -1,4 +1,6 @@
-package app.xuankai.xhys.mysql
+package app.xuankai.xhys.mysql.model
+
+import app.xuankai.xhys.mysql.IObjectMysql
 
 class FoodBlackList : IObjectMysql {
     var id: Int = 0

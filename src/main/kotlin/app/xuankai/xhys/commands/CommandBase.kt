@@ -16,13 +16,14 @@ object CommandBase {
 
     private fun log() : Message =
         PlainText("""
-        |版本号：202105r2
+        |版本号：202105r3
         |更新内容：
-        |1.新增抽卡指令(只支持十连抽)
-        |(.drawcard或.十连)
-        |每次十连消耗100硬币
-        |2.修改硬币存储方式
-        |3. .coin
+        |1.新增背包指令
+        |(.item<页数>或.背包<页数>)
+        |2.修改money指令内容
+        |3.减短羽饰骑士的名字以适配背包
+        |4.增加表情回复内容
+        |5.升级框架版本
         """.trimMargin())
 
     private fun help() : Message =
@@ -32,6 +33,7 @@ object CommandBase {
                 ".jrrp 获取今日人品\n" +
                 ".money 查询硬币数量\n" +
                 ".dice 丢骰子\n" +
+                ".item <page> 查看背包" +
                 ".pshelp 查询付费项目帮助")
 
     private fun psHelp() : Message =

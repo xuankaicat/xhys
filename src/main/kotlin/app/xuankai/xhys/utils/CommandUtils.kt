@@ -2,7 +2,7 @@ package app.xuankai.xhys.utils
 
 class CommandUtils {
     companion object {
-        val existingCommands = arrayOf("jrrp", "dice", "help", "coin", "money", "pshelp")
+        private val existingCommands = arrayOf("jrrp", "dice", "help", "coin", "money", "pshelp")
         /*尝试修复用户输入*/
         fun tryCheck(str : String) : String? {
             for(s in existingCommands){

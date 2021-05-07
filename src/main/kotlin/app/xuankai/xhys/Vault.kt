@@ -1,8 +1,7 @@
 package app.xuankai.xhys
 
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.Users
-import net.mamoe.mirai.message.data.PlainText
+import app.xuankai.xhys.mysql.model.Users
 
 object Vault {
     const val canNotEffortText = "%s,你硬币不够了！"

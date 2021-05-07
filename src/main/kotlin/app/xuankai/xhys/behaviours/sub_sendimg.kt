@@ -64,6 +64,11 @@ fun XhysMiraiBot.sendimg(){
                 this.javaClass.getResourceAsStream("/小企鹅冲击.jpg")!!.sendAsImageTo(subject)
                 lastMsg.remove(id)
             }
+            contains("笑死"){
+                id = if (subject is Group) source.targetId else source.fromId
+                this.javaClass.getResourceAsStream("/笑死.png")!!.sendAsImageTo(subject)
+                lastMsg.remove(id)
+            }
         }
     }
 }

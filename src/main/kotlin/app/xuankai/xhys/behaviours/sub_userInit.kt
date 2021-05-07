@@ -2,7 +2,7 @@ package app.xuankai.xhys
 
 import net.mamoe.mirai.event.subscribeMessages
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.Users
+import app.xuankai.xhys.mysql.model.Users
 import net.mamoe.mirai.event.EventPriority
 
 fun XhysMiraiBot.userInit(){

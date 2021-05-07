@@ -6,8 +6,8 @@ import app.xuankai.xhys.command_rp
 import app.xuankai.xhys.commands.CommandBase
 import app.xuankai.xhys.commands.CommandJrrp
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.FoodBlackList
-import app.xuankai.xhys.mysql.Users
+import app.xuankai.xhys.mysql.model.FoodBlackList
+import app.xuankai.xhys.mysql.model.Users
 import app.xuankai.xhys.utils.CommandUtils
 import app.xuankai.xhys.utils.format
 import app.xuankai.xhys.utils.toInputStream
@@ -17,9 +17,8 @@ import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.io.File
+import java.util.regex.Pattern
 
 object CommandMgr {
     fun XhysMiraiBot.baseCommand(){
@@ -36,6 +35,7 @@ object CommandMgr {
                             command.startsWith("rp")-> command_rp(this)
                             command == "money" || command == "coin" -> commandMoney(this)
                             command == "drawcard" || command == "十连" -> commandDrawCard(this)
+                            command.startsWith("item") || command.startsWith("背包") -> commandBackpack(this)
                             command.startsWith("atetext") -> commandAtetext(this)
                             command.startsWith("nn") -> commandNn(this)
                             command.startsWith("blackfood") -> commandBlackfood(this)
@@ -78,7 +78,7 @@ object CommandMgr {
         val result = Users.findByQQId(msg.source.fromId)
         val money = result.money!! - result.usedMoney
         val name = result.nick ?: msg.senderName
-        return PlainText("${name},你已经存了${money}枚硬币啦!")
+        return PlainText("${name},你一共获得过${result.money}枚硬币，还存着${money}枚可以用!")
     }
 
     private fun commandAtetext(msg : MessageEvent) : Message{
@@ -149,6 +149,26 @@ object CommandMgr {
         if(!Vault.cost(result.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
         val stream = CardMgr.getTenCards(name, result.qqId, msg.source.sender.avatarUrl).toInputStream()
         return messageChainOf(PlainText("${name},你成功花费100枚硬币进行了一次十连！"),
+            stream.uploadAsImage(msg.subject))
+    }
+
+    private suspend fun commandBackpack(msg: MessageEvent): Message {
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+        val msgstr = msg.message[1].toString().substring(1)
+        val pattern: Pattern = Pattern.compile("\\d+$")
+        val page : Int = if(msgstr.trim() == "item" || msgstr.trim() == "背包") 1 else {
+            val res = pattern.matcher(msgstr)
+            if(res.find()){
+                res.group().toInt()
+            }else{
+                return PlainText("奇怪的页数！")
+            }
+        }
+        val imgResult = CardMgr.getBackpack(name, result.qqId, msg.source.sender.avatarUrl, page)
+            ?: return PlainText("${name},你根本没有这么多东西！")
+        val stream = imgResult.toInputStream()
+        return messageChainOf(PlainText("${name},你的背包第 $page 页是"),
             stream.uploadAsImage(msg.subject))
     }
 }

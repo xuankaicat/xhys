@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "app.xuankai"
-version = "202105r2"
+version = "202105r3"
 
 repositories {
     //maven {setUrl("http://maven.aliyun.com/nexus/content/groups/public/")}
@@ -26,7 +26,7 @@ tasks.withType(KotlinJvmCompile::class.java) {
 }
 
 dependencies {
-    val miraiVersion = "2.6.2"
+    val miraiVersion = "2.6.4"
 
     // 开发时使用 mirai-core-api，运行时提供 mirai-core
     api("net.mamoe", "mirai-core-api", miraiVersion)
