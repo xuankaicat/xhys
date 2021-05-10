@@ -18,7 +18,7 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 object CardMgr {
-    private val RCardPool: ArrayList<Cards> = DataMysql.query<Cards>("select * from cards where rarity='R' and inPool is true")
+    private val RCardPool: ArrayList<Cards> = DataMysql.query("select * from cards where rarity='R' and inPool is true")
     private val SRCardPool = DataMysql.query<Cards>("select * from cards where rarity='SR' and inPool is true")
     private val SSRCardPool = DataMysql.query<Cards>("select * from cards where rarity='SSR' and inPool is true")
     private val CardImgPool = HashMap<Int, BufferedImage>()
@@ -50,6 +50,7 @@ object CardMgr {
 
         val image = BufferedImage(640, 480, background.type)
         val g2d = image.createGraphics()
+        val fm: FontMetrics = g2d.fontMetrics
         g2d.drawImage(background, 0, 0, null)
         val items = CardBackpack.userGetBackpackItems(qqId, pageStart, onePageAmount)
         var index = 0
@@ -62,7 +63,9 @@ object CardMgr {
                 g2d.drawImage(CardImgPool[card.id], x, y, 32, 32, null)
                 g2d.drawString(card.name, x + 40, y + 28)
                 g2d.color = Color.BLACK
-                g2d.drawString("x ${items[index].amount}", x + 40, y + 14)
+                val amountStr = "x ${items[index].amount}"
+                g2d.drawString(amountStr, x + 150 - fm.stringWidth(amountStr), y + 14)
+                g2d.drawString("ID: ${card.id}", x + 40, y + 14)
                 index++
                 if(index >= items.size) break
             }

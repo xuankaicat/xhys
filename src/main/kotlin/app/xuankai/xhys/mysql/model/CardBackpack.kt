@@ -18,6 +18,48 @@ open class CardBackpack : IObjectMysql {
     }
 
     companion object{
+        /**
+         * qqId的用户将amount个cardId物品交给orderQQId，返回给予是否成功
+         * @param qqId Long
+         * @param orderQQId Long
+         * @param cardId Int
+         * @param amount Int
+         * @return Boolean
+         */
+        fun userSendCard(qqId: Long, orderQQId: Long, cardId: Int, amount: Int): Boolean {
+            val fromAmount = DataMysql.getValue<Int>("select amount from cardbackpack " +
+                    "where qqId = $qqId and cardId = $cardId")
+                ?: return false
+            if(amount > fromAmount) return false
+
+            val toAmount = DataMysql.getValue<Int>("select amount from cardbackpack " +
+                    "where qqId = $orderQQId and cardId = $cardId")
+            if(toAmount == null){
+                //如果列表中不存在则判断用户是否存在
+                if(!Users.isUserExist(orderQQId)) return false
+
+                DataMysql.executeSql("insert into cardbackpack(qqId, cardId, amount) " +
+                        "values ($orderQQId, $cardId, $amount)")
+            }else{
+                DataMysql.executeSql("update cardbackpack set amount = ${toAmount + amount} " +
+                        "where qqId = $orderQQId and cardId = $cardId")
+            }
+            if(fromAmount == amount){
+                DataMysql.executeSql("delete from cardbackpack " +
+                        "where qqId = $qqId and cardId = $cardId")
+            }else{
+                DataMysql.executeSql("update cardbackpack set amount = ${fromAmount - amount} " +
+                        "where qqId = $qqId and cardId = $cardId")
+            }
+            return true
+        }
+
+        /**
+         * 用户获取卡牌
+         * @param qqId Long
+         * @param cardId Int
+         * @return Boolean
+         */
         fun userGetNewCard(qqId: Long, cardId: Int): Boolean{
             val exist = DataMysql.query<CardBackpack>("select * from cardbackpack" +
                     " where qqId = $qqId and cardId = $cardId")
@@ -38,6 +80,13 @@ open class CardBackpack : IObjectMysql {
             }
         }
 
+        /**
+         * 获取用户背包内物品
+         * @param qqId Long
+         * @param startIndex Int
+         * @param indexAmount Int
+         * @return ArrayList<UserCardBackpackItem>
+         */
         fun userGetBackpackItems(qqId: Long, startIndex: Int, indexAmount: Int): ArrayList<UserCardBackpackItem> {
             val cardArray = DataMysql.query<CardBackpack>("select cardId,amount from cardbackpack" +
                     " where qqId = $qqId limit $startIndex,$indexAmount")
@@ -49,6 +98,11 @@ open class CardBackpack : IObjectMysql {
             return result
         }
 
-        fun userGetItemAmount(qqId: Long): Long = DataMysql.getValue("select count(*) from cardbackpack where qqId = $qqId")
+        /**
+         * 获取用户拥有的物品种数
+         * @param qqId Long
+         * @return Long
+         */
+        fun userGetItemAmount(qqId: Long): Long = DataMysql.getValue("select count(*) from cardbackpack where qqId = $qqId")!!
     }
 }

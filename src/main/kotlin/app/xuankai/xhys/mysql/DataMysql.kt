@@ -26,6 +26,10 @@ object DataMysql {
         stmt?.close()
     }
 
+    /**
+     * 运行sql语句
+     * @param sql String
+     */
     fun executeSql(sql : String){
         val conn = openConnection()
         val stmt = conn?.createStatement()
@@ -38,6 +42,11 @@ object DataMysql {
         closeConnection(conn, stmt)
     }
 
+    /**
+     * 获取一个或一组数据库对象的值，如果不存在则返回空集合
+     * @param sql String
+     * @return ArrayList<T>
+     */
     inline fun <reified T : IObjectMysql> query(sql: String) : ArrayList<T>{
         val conn = openConnection()
         val stmt = conn?.createStatement()
@@ -63,15 +72,24 @@ object DataMysql {
         return list
     }
 
-    inline fun <reified T : Any> getValue(sql: String) : T {
+    /**
+     * 获取一个值，如果表中不存在该数据则返回null
+     * @param sql String
+     * @return T?
+     */
+    inline fun <reified T : Any> getValue(sql: String) : T? {
         val conn = openConnection()
         val stmt = conn?.createStatement()
         try{
             val resultSet : ResultSet = stmt!!.executeQuery(sql)
-            resultSet.next()
-            val res = resultSet.getObject(1) as T
-            resultSet.close()
-            return res
+            if(resultSet.next()){
+                val res = resultSet.getObject(1) as T
+                resultSet.close()
+                return res
+            }else{
+                resultSet.close()
+                return null
+            }
         }catch (e:Exception){
             e.printStackTrace()
             println("Mysql查询失败,语句为${sql}")

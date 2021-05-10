@@ -37,6 +37,9 @@ open class Users() : IObjectMysql {
     }
 
     companion object{
+        fun isUserExist(qqId: Long) = DataMysql.getValue<Int>("select id from users " +
+                "where qqId = $qqId") != null
+
         fun findByQQId(qqId : Long) = DataMysql.query<Users>("select * from users where qqId=${qqId}")[0]
     }
 }

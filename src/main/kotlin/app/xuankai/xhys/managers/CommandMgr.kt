@@ -6,6 +6,8 @@ import app.xuankai.xhys.command_rp
 import app.xuankai.xhys.commands.CommandBase
 import app.xuankai.xhys.commands.CommandJrrp
 import app.xuankai.xhys.mysql.DataMysql
+import app.xuankai.xhys.mysql.model.CardBackpack
+import app.xuankai.xhys.mysql.model.Cards
 import app.xuankai.xhys.mysql.model.FoodBlackList
 import app.xuankai.xhys.mysql.model.Users
 import app.xuankai.xhys.utils.CommandUtils
@@ -38,6 +40,8 @@ object CommandMgr {
                             command.startsWith("item") || command.startsWith("背包") -> commandBackpack(this)
                             command.startsWith("atetext") -> commandAtetext(this)
                             command.startsWith("nn") -> commandNn(this)
+                            command.startsWith("pay")-> commandPay(this)
+                            command.startsWith("send")-> commandSend(this)
                             command.startsWith("blackfood") -> commandBlackfood(this)
                             command.startsWith("unblackfood") -> commandUnblackfood(this)
 
@@ -170,5 +174,42 @@ object CommandMgr {
         val stream = imgResult.toInputStream()
         return messageChainOf(PlainText("${name},你的背包第 $page 页是"),
             stream.uploadAsImage(msg.subject))
+    }
+
+    private fun commandPay(msg: MessageEvent): Message {
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+        val msgstr = msg.message[1].toString()
+        val value : String = (if(msgstr.trim() == ".pay") null else msgstr.substring(4).trim())
+            ?: return PlainText("参数不对喔，先写要付给谁再写要付多少枚硬币！中间用空格分开！")
+        val params = getParams(value)
+        if(params.size != 2) return PlainText("参数不对喔，先写要付给谁再写要付多少枚硬币！中间用空格分开！")
+        if(!Vault.userSendCoin(result.qqId, params[0].toLong(), params[1].toLong())) return PlainText.format(Vault.canNotEffortText, name)
+        return PlainText("${name},你成功支付给${params[0]} ${params[1]}枚硬币！")
+    }
+
+    private fun commandSend(msg: MessageEvent): Message {
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+        val msgstr = msg.message[1].toString()
+        val value : String = (if(msgstr.trim() == ".send") null else msgstr.substring(5).trim())
+            ?: return PlainText("参数不对喔，先写要付给谁再写卡牌的ID再写数量！中间用空格分开！")
+        val params = getParams(value)
+        if(!(params.size in 2..3)) return PlainText("参数不对喔，先写要付给谁再写卡牌的ID再写数量！中间用空格分开！")
+        val amount = if(params.size == 2) 1 else params[2].toInt()
+        val cardId = params[1].toInt()
+        if(!CardBackpack.userSendCard(result.qqId, params[0].toLong(), cardId, amount)) return PlainText("发送失败了，请检查参数！")
+        val cardName = Cards.findById(cardId).name
+        return PlainText("${name},你成功把$amount 个$cardName 交给了${params[0]}!")
+    }
+
+    private val regex = Regex("\\S+")
+    private fun getParams(str: String): List<String> {
+        val matched = regex.findAll(str)
+        val result = ArrayList<String>()
+        for(m in matched.iterator()){
+            result.add(m.value)
+        }
+        return result
     }
 }

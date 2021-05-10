@@ -28,5 +28,9 @@ open class Cards : IObjectMysql {
     fun addExistingAmount(){
         DataMysql.executeSql("update cards set existingAmount = existingAmount+1 where id=${id}")
     }
+
+    companion object {
+        fun findById(id : Int) = DataMysql.query<Cards>("select * from cards where id=${id}")[0]
+    }
 }
 
