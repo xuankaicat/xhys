@@ -5,7 +5,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     java
 
-    val kotlinVersion = "1.4.32"
+    val kotlinVersion = "1.5.0"
     kotlin("jvm") version kotlinVersion
 
     id("com.github.johnrengelman.shadow") version "6.1.0"//使用shadow对依赖进行打包
@@ -48,11 +48,5 @@ tasks.withType<ShadowJar> {
     // 将 build.gradle 打入到 jar 中, 方便查看依赖包版本
     from("./"){
         include("build.gradle.kts")
-    }
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-        useIR = true
     }
 }

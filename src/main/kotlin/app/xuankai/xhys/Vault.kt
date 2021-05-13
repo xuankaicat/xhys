@@ -17,7 +17,7 @@ object Vault {
         //判断orderQQId用户是否存在
         if(!Users.isUserExist(orderQQId)) return false
         if(!costBaseCoin(qqId, amount)) return false
-        add(orderQQId, amount)
+        addCoin(orderQQId, amount)
         return true
     }
 
@@ -27,7 +27,7 @@ object Vault {
      * @param cost Long
      * @return Boolean
      */
-    fun cost(qqId : Long, cost : Long): Boolean {
+    fun costCoin(qqId : Long, cost : Long): Boolean {
         val result = DataMysql.query<Users>("select money,usedMoney from users where qqId=${qqId}")
         val money = result[0].money!! - result[0].usedMoney
         if(money < cost) return false
@@ -54,7 +54,16 @@ object Vault {
      * @param qqId Long
      * @param value Long
      */
-    fun add(qqId: Long, value:Long) {
+    fun addCoin(qqId: Long, value:Long) {
         DataMysql.executeSql("update users set money=money+${value} where qqId=${qqId}")
+    }
+
+    /**
+     * 减少用户用掉的硬币
+     * @param qqId Long
+     * @param value Long
+     */
+    fun subUsedCoin(qqId: Long, value: Long) {
+        DataMysql.executeSql("update users set usedMoney=usedMoney-${value} where qqId=${qqId}")
     }
 }

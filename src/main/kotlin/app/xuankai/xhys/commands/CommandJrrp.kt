@@ -1,7 +1,12 @@
 package app.xuankai.xhys.commands
 
+import app.xuankai.xhys.Vault
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.model.Users
+import javafx.application.Application.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.events.MessageEvent
@@ -33,7 +38,8 @@ object CommandJrrp {
         "你还希望听到什么好消息？"
     )
 
-    fun get(msg : MessageEvent) : Message {
+    fun get(msg : MessageEvent, args: List<String> = listOf()) : Message {
+        if(args.isNotEmpty()) return PlainText("jrrp不存在参数！")
         msg.apply {
             val randoms = getRpValue(source.fromId)
             addJrrpMoney(source.fromId, randoms)
@@ -74,13 +80,15 @@ object CommandJrrp {
         val today : LocalDate = LocalDate.now()
         val result = DataMysql.query<Users>("select * from users where qqId=${qqId}")
         if(today != result[0].lastjrrp){
-            val addmoney : Long = when (rpvalue) {
+            val addmoney = when (rpvalue) {
                 1 -> 100
                 in 2..10 -> rpvalue * 5
                 in 90..100 -> rpvalue * 2
                 else -> rpvalue
-            } + result[0].money!!
-            DataMysql.executeSql("update users set lastjrrp='${today}',money=${addmoney} where qqId=${qqId}")
+            }
+            DataMysql.executeSql("update users set lastjrrp='${today}' where qqId=${qqId}")
+            Vault.addCoin(qqId, addmoney.toLong())
+            Vault.subUsedCoin(qqId, 100)
         }
     }
 }

@@ -2,6 +2,7 @@ package app.xuankai.xhys.mysql.model
 
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
+import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.viewModel.UserCardBackpackItem
 
 open class CardBackpack : IObjectMysql {
@@ -97,6 +98,22 @@ open class CardBackpack : IObjectMysql {
             }
             return result
         }
+
+        /**
+         * 获取一个稀有度重复物品的数量
+         * @param qqId Long
+         * @param rarity CardRarity
+         * @return Long
+         */
+        fun userGetBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity) =
+            DataMysql.getValue<Long>("select sum(amount) from cardbackpack" +
+                    " where qqId = $qqId and amount > 1 and cardId in (" +
+                    "select id from cards where rarity='${rarity.name}')")
+
+        fun userClearBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity) =
+            DataMysql.getValue<Long>("select sum(amount) from cardbackpack" +
+                    " where qqId = $qqId and amount > 1 and cardId in (" +
+                    "select id from cards where rarity='${rarity.name}')")
 
         /**
          * 获取用户拥有的物品种数
