@@ -16,14 +16,9 @@ object CommandBase {
 
     private fun log() : Message =
         PlainText("""
-        |版本号：202105r4
+        |版本号：202105r5
         |更新内容：
-        |新增交易指令
-        |1.交给另一个玩家硬币：
-        |.pay <qq号> <硬币数量>
-        |2.交给另一个玩家物品：
-        |.send <qq号> <物品ID> <物品数量>
-        |（物品数量默认为1，物品ID可以在背包中查看）
+        |每日打卡额外100个不计数的硬币
         """.trimMargin())
 
     private fun help() : Message =

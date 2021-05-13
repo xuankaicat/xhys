@@ -1,9 +1,12 @@
 package app.xuankai.xhys.mysql.model
 
+import app.xuankai.xhys.Vault
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
+import app.xuankai.xhys.mysql.model.MyInt.Companion.toIntList
 import app.xuankai.xhys.mysql.viewModel.UserCardBackpackItem
+import java.math.BigDecimal
 
 open class CardBackpack : IObjectMysql {
     var qqId: Long = 0L
@@ -100,20 +103,38 @@ open class CardBackpack : IObjectMysql {
         }
 
         /**
-         * 获取一个稀有度重复物品的数量
+         * 获取某个稀有度重复物品的数量
          * @param qqId Long
          * @param rarity CardRarity
          * @return Long
          */
-        fun userGetBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity) =
-            DataMysql.getValue<Long>("select sum(amount) from cardbackpack" +
-                    " where qqId = $qqId and amount > 1 and cardId in (" +
-                    "select id from cards where rarity='${rarity.name}')")
+        fun userGetBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity): Long {
+            val idStr = DataMysql.query<MyInt>("select id from cards where rarity='${rarity.name}'").toIntList().joinToString()
 
-        fun userClearBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity) =
-            DataMysql.getValue<Long>("select sum(amount) from cardbackpack" +
-                    " where qqId = $qqId and amount > 1 and cardId in (" +
-                    "select id from cards where rarity='${rarity.name}')")
+            return DataMysql.getValue<BigDecimal>("select sum(amount) from cardbackpack" +
+                    " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
+        }
+
+        /**
+         * 分解某个稀有度重复物品的数量，返回分解获得的材料数量
+         * @param qqId Long
+         * @param rarity CardRarity
+         * @return Long
+         */
+        fun userClearBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity): Long {
+            val idStr = DataMysql.query<MyInt>("select id from cards where rarity='${rarity.name}'").toIntList().joinToString()
+            val cardAmount = DataMysql.getValue<BigDecimal>("select sum(amount) from cardbackpack" +
+                    " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
+
+            val mateAmount = when(rarity) {
+                CardRarity.R -> cardAmount
+                CardRarity.SR -> cardAmount * 5
+                CardRarity.SSR -> cardAmount * 40
+            }
+            Vault.addMaterial(qqId, mateAmount)
+            DataMysql.executeSql("update cardbackpack set amount=1 where qqId=${qqId} and cardId in ($idStr)")
+            return mateAmount
+        }
 
         /**
          * 获取用户拥有的物品种数

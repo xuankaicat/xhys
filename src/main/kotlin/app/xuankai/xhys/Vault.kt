@@ -16,7 +16,7 @@ object Vault {
     fun userSendCoin(qqId: Long, orderQQId: Long, amount: Long): Boolean {
         //判断orderQQId用户是否存在
         if(!Users.isUserExist(orderQQId)) return false
-        if(!costBaseCoin(qqId, amount)) return false
+        if(!subBaseCoin(qqId, amount)) return false
         addCoin(orderQQId, amount)
         return true
     }
@@ -27,7 +27,7 @@ object Vault {
      * @param cost Long
      * @return Boolean
      */
-    fun costCoin(qqId : Long, cost : Long): Boolean {
+    fun subCoin(qqId : Long, cost : Long): Boolean {
         val result = DataMysql.query<Users>("select money,usedMoney from users where qqId=${qqId}")
         val money = result[0].money!! - result[0].usedMoney
         if(money < cost) return false
@@ -41,7 +41,7 @@ object Vault {
      * @param cost Long
      * @return Boolean
      */
-    fun costBaseCoin(qqId: Long, cost: Long): Boolean {
+    fun subBaseCoin(qqId: Long, cost: Long): Boolean {
         val result = DataMysql.query<Users>("select money,usedMoney from users where qqId=${qqId}")
         val money = result[0].money!! - result[0].usedMoney
         if(money < cost) return false
@@ -65,5 +65,23 @@ object Vault {
      */
     fun subUsedCoin(qqId: Long, value: Long) {
         DataMysql.executeSql("update users set usedMoney=usedMoney-${value} where qqId=${qqId}")
+    }
+
+    /**
+     * 用户获取材料
+     * @param qqId Long
+     * @param value Long
+     */
+    fun addMaterial(qqId: Long, value: Long) {
+        DataMysql.executeSql("update users set material=material+${value} where qqId=${qqId}")
+    }
+
+    /**
+     * 用户失去材料
+     * @param qqId Long
+     * @param value Long
+     */
+    fun subMaterial(qqId: Long, value: Long) {
+        DataMysql.executeSql("update users set material=material-${value} where qqId=${qqId}")
     }
 }

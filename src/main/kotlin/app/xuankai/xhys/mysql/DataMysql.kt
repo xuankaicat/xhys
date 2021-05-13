@@ -83,7 +83,7 @@ object DataMysql {
         try{
             val resultSet : ResultSet = stmt!!.executeQuery(sql)
             if(resultSet.next()){
-                val res = resultSet.getObject(1) as T
+                val res = resultSet.getObject(1) as? T
                 resultSet.close()
                 return res
             }else{
@@ -95,6 +95,6 @@ object DataMysql {
             println("Mysql查询失败,语句为${sql}")
         }
         closeConnection(conn, stmt)
-        return 0 as T
+        return null
     }
 }

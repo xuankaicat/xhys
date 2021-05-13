@@ -6,6 +6,7 @@ import app.xuankai.xhys.behaviours.Repeat
 import app.xuankai.xhys.commands.CommandBase
 import app.xuankai.xhys.commands.CommandJrrp
 import app.xuankai.xhys.mysql.DataMysql
+import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.model.CardBackpack
 import app.xuankai.xhys.mysql.model.Cards
 import app.xuankai.xhys.mysql.model.FoodBlackList
@@ -19,7 +20,6 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.HashMap
 import kotlin.reflect.KSuspendFunction2
@@ -29,17 +29,20 @@ object CommandMgr {
     private val cmd = HashMap<String, Any>()
 
     init {
-        cmd.register(CommandJrrp::get, "jrrp")
-        cmd.register(Repeat::commandRp, "rp")
-        cmd.register(::commandMoney, "money", "coin")
-        cmd.register(::commandDrawCard, "drawcard", "十连")
-        cmd.register(::commandBackpack, "item", "背包")
-        cmd.register(::commandAtetext, "atetext")
-        cmd.register(::commandBlackfood, "blackfood")
-        cmd.register(::commandUnblackfood, "unblackfood")
-        cmd.register(::commandNn, "nn")
-        cmd.register(::commandPay, "pay")
-        cmd.register(::commandSend, "send")
+        cmd.apply {
+            register(CommandJrrp::get, "jrrp")
+            register(Repeat::commandRp, "rp")
+            register(::commandMoney, "money", "coin")
+            register(::commandDrawCard, "drawcard", "十连")
+            register(::commandBackpack, "item", "背包")
+            register(::commandAtetext, "atetext")
+            register(::commandBlackfood, "blackfood")
+            register(::commandUnblackfood, "unblackfood")
+            register(::commandNn, "nn")
+            register(::commandPay, "pay")
+            register(::commandSend, "send")
+            register(::commandDisenchant, "disenchant", "分解")
+        }
     }
 
     private fun HashMap<String, Any>.register(
@@ -64,7 +67,6 @@ object CommandMgr {
 
     private val pattern = Pattern.compile("^[.|。](?<name>=$cmdStrPattern)\\s*?(?<params>.*)$",
         Pattern.CASE_INSENSITIVE)
-    @SuppressWarnings("unchecked")
     private suspend fun tryParse(messageEvent: MessageEvent): Message? {
         val matcher = pattern.matcher(messageEvent.message[1].toString())
         return if (matcher.find()) {
@@ -72,7 +74,7 @@ object CommandMgr {
             val params = matcher.group("params")
             val args = params?.trim()?.split(' ')?.toList()?.filter { it.trim() != "" } ?: listOf()
             //运行指令函数
-            val cmdtext = matcher.group("name").lowercase(Locale.getDefault())
+            val cmdtext = matcher.group("name").toLowerCase()
             val c = cmd[cmdtext]
             if(c == null) {
                 val baseCmdResult = CommandBase.getCommand(cmdtext)
@@ -127,7 +129,7 @@ object CommandMgr {
     private fun commandAtetext(msg : MessageEvent, args: List<String>) : Message {
         val result = Users.findByQQId(msg.source.fromId)
         val name = result.nick ?: msg.senderName
-        if(!Vault.costCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String? = if(args.isEmpty()) null else args.joinToString()
 
         if(value == null){
@@ -141,7 +143,7 @@ object CommandMgr {
     private fun commandNn(msg : MessageEvent, args: List<String>) : Message {
         val result = Users.findByQQId(msg.source.fromId)
         val name = result.nick ?: msg.senderName
-        if(!Vault.costCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String? = if(args.isEmpty()) null else args.joinToString("")
 
         if(value == null){
@@ -155,7 +157,7 @@ object CommandMgr {
     private fun commandBlackfood(msg : MessageEvent, args: List<String>) : Message {
         val result = Users.findByQQId(msg.source.fromId)
         val name = result.nick ?: msg.senderName
-        if(!Vault.costCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String = (if(args.isEmpty()) null else args.joinToString(""))
             ?: return PlainText("所以小黄勇士应该把什么加入食物黑名单呢？")
         val fresult = DataMysql.query<FoodBlackList>("select * from foodblacklist where eatStr='${value}'")
@@ -171,7 +173,7 @@ object CommandMgr {
     private fun commandUnblackfood(msg : MessageEvent, args: List<String>) : Message {
         val result = Users.findByQQId(msg.source.fromId)
         val name = result.nick ?: msg.senderName
-        if(!Vault.costCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String = (if(args.isEmpty()) null else args.joinToString(""))
             ?: return PlainText("所以小黄勇士应该把什么从食物黑名单上划掉呢？")
         val fresult = DataMysql.query<FoodBlackList>("select * from foodblacklist where eatStr='${value}'")
@@ -187,7 +189,7 @@ object CommandMgr {
         if(args.isNotEmpty()) return PlainText("参数不正确，应该使用.drawcard！")
         val result = Users.findByQQId(msg.source.fromId)
         val name = result.nick ?: msg.senderName
-        if(!Vault.costCoin(result.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
+        if(!Vault.subCoin(result.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
         val stream = CardMgr.getTenCards(name, result.qqId, msg.source.sender.avatarUrl).toInputStream()
         return messageChainOf(PlainText("${name},你成功花费100枚硬币进行了一次十连！"),
             stream.uploadAsImage(msg.subject))
@@ -227,15 +229,29 @@ object CommandMgr {
         return PlainText("${name},你成功把$amount 个$cardName 交给了${args[0]}!")
     }
 
-//    private fun commandDisenchant(msg : MessageEvent, args: List<String>) : Message {
-//        val result = Users.findByQQId(msg.source.fromId)
-//        val name = result.nick ?: msg.senderName
-//        val msgstr = msg.message[1].toString().substring(1)
-//        if(msgstr.trim() == "disenchant" || msgstr.trim() == "分解") {
-//
-//        } else {
-//
-//        }
-//        return PlainText("")
-//    }
+    private fun commandDisenchant(msg : MessageEvent, args: List<String>) : Message {
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+        if(args.isEmpty()) {
+            //获取分解列表的情况
+            val rAmount = CardBackpack.userGetBackpackRepeatItemAmount(result.qqId, CardRarity.R)
+            val srAmount = CardBackpack.userGetBackpackRepeatItemAmount(result.qqId, CardRarity.SR)
+            val ssrAmount = CardBackpack.userGetBackpackRepeatItemAmount(result.qqId, CardRarity.SSR)
+            return PlainText(
+                "$name,这些是你的分解结果和方法：\n" +
+                        "一共有 $rAmount 个重复的R品质物品，分解可以得到 $rAmount 个材料(使用.disenchantR分解所有重复R品质物品)\n" +
+                        "一共有 $srAmount 个重复的SR品质物品，分解可以得到 ${srAmount * 5} 个材料(使用.disenchantSR分解所有重复SR品质物品)\n" +
+                        "一共有 $ssrAmount 个重复的SSR品质物品，SSR品质太坚硬了分解不掉XD"
+            )
+        } else {
+            //执行分解的情况
+            val rarity = CardRarity.valueOf(args[0].toUpperCase())
+            val mateAmount = CardBackpack.userClearBackpackRepeatItemAmount(result.qqId, rarity)
+            return if(mateAmount == 0L){
+                PlainText("$name,你根本没有多余的${args[0].toUpperCase()}品质物品！")
+            } else {
+                PlainText("$name,多余的${args[0].toUpperCase()}品质物品分解成功！获得了 $mateAmount 个材料！")
+            }
+        }
+    }
 }
