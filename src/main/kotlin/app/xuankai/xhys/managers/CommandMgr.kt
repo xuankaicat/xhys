@@ -17,6 +17,7 @@ import app.xuankai.xhys.utils.toInputStream
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
@@ -25,7 +26,7 @@ import kotlin.collections.HashMap
 import kotlin.reflect.KSuspendFunction2
 
 object CommandMgr {
-    private var cmdStrPattern = "|log|help|pshelp|dice"
+    private var cmdStrPattern = "|log|help|pshelp|dice|pool"
     private val cmd = HashMap<String, Any>()
 
     init {
@@ -34,7 +35,9 @@ object CommandMgr {
             register(Repeat::commandRp, "rp")
             register(::commandMoney, "money", "coin")
             register(::commandDrawCard, "drawcard", "十连")
-            register(::commandBackpack, "item", "背包")
+            register(::commandActivityDrawCard, "活动十连")
+            register(::commandBackpack, "bag","backpack", "背包")
+            register(::commandItem, "item", "物品")
             register(::commandAtetext, "atetext")
             register(::commandBlackfood, "blackfood")
             register(::commandUnblackfood, "unblackfood")
@@ -42,6 +45,7 @@ object CommandMgr {
             register(::commandPay, "pay")
             register(::commandSend, "send")
             register(::commandDisenchant, "disenchant", "分解")
+            register(::commandMake, "make", "制造")
         }
     }
 
@@ -186,13 +190,19 @@ object CommandMgr {
     }
 
     private suspend fun commandDrawCard(msg : MessageEvent, args: List<String>) : Message {
-        if(args.isNotEmpty()) return PlainText("参数不正确，应该使用.drawcard！")
+        val pool = if(args.isEmpty()) null else args[0]
+        if(pool != null && !(pool in CardMgr.cardPoolList)) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
         val result = Users.findByQQId(msg.source.fromId)
         val name = result.nick ?: msg.senderName
         if(!Vault.subCoin(result.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
-        val stream = CardMgr.getTenCards(name, result.qqId, msg.source.sender.avatarUrl).toInputStream()
-        return messageChainOf(PlainText("${name},你成功花费100枚硬币进行了一次十连！"),
+        val stream = CardMgr.getTenCards(name, result.qqId, msg.source.sender.avatarUrl, pool).toInputStream()
+        return messageChainOf(PlainText("${name},你成功花费100枚硬币在${pool ?: "默认"}卡池进行了一次十连！"),
             stream.uploadAsImage(msg.subject))
+    }
+
+    private suspend fun commandActivityDrawCard(msg : MessageEvent, args: List<String>) : Message {
+        if(args.isNotEmpty()) return PlainText("")
+        return commandDrawCard(msg, listOf("A"))
     }
 
     private suspend fun commandBackpack(msg : MessageEvent, args: List<String>) : Message {
@@ -205,6 +215,19 @@ object CommandMgr {
             ?: return PlainText("${name},你根本没有这么多东西！")
         val stream = imgResult.toInputStream()
         return messageChainOf(PlainText("${name},你的背包第 $page 页是"),
+            stream.uploadAsImage(msg.subject))
+    }
+
+    private suspend fun commandItem(msg : MessageEvent, args: List<String>) : Message {
+        if(args.size > 1) return PlainText("参数不正确，应该使用.item <page>！")
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+
+        val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
+        val imgResult = CardMgr.getBackpack(name, result.qqId, msg.source.sender.avatarUrl, page, false)
+            ?: return PlainText("${name},你根本没有这么多东西！")
+        val stream = imgResult.toInputStream()
+        return messageChainOf(PlainText("${name},你的物品第 $page 页是"),
             stream.uploadAsImage(msg.subject))
     }
 
@@ -225,8 +248,8 @@ object CommandMgr {
         val amount = if(args.size == 2) 1 else args[2].toInt()
         val cardId = args[1].toInt()
         if(!CardBackpack.userSendCard(result.qqId, args[0].toLong(), cardId, amount)) return PlainText("发送失败了，请检查参数！")
-        val cardName = Cards.findById(cardId).name
-        return PlainText("${name},你成功把$amount 个$cardName 交给了${args[0]}!")
+        val cardName = Cards.findById(cardId)?.name ?: return PlainText("ID为$cardId 的物品不存在！")
+        return PlainText("${name},你成功把 $amount 个 $cardName 交给了${args[0]}!")
     }
 
     private fun commandDisenchant(msg : MessageEvent, args: List<String>) : Message {
@@ -252,6 +275,39 @@ object CommandMgr {
             } else {
                 PlainText("$name,多余的${args[0].toUpperCase()}品质物品分解成功！获得了 $mateAmount 个材料！")
             }
+        }
+    }
+
+    private fun commandMake(msg : MessageEvent, args: List<String>) : Message {
+        if(args.size != 1 && args.size != 2) return PlainText("参数不对喔，应该使用.make <Id> <数量>！")
+        val result = Users.findByQQId(msg.source.fromId)
+        val name = result.nick ?: msg.senderName
+        val cardId = args[0].toInt()
+        val card = Cards.findById(cardId)
+        val amount = args[1].toLong()
+        val metaCost = amount * 300
+        if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SSR制造需要300个材料！")
+        if(card?.rarity == CardRarity.SSR /*这里以后可以加入不能兑换限定物品*/) {
+            CardBackpack.userGetNewCard(result.qqId, card.id, amount)
+            Vault.subMaterial(result.qqId, metaCost)
+            var text: Message = PlainText("$name,你成功使用 $metaCost 个材料制造了 $amount 个 ${card.name}！")
+            val byCard = ArrayList<Cards>()
+            for (i in 0..amount) {
+                if((1..10).random() == 1) {
+                    val rdCard = CardMgr.getRandomSSR()
+                    byCard.add(rdCard)
+                    CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                }
+            }
+            if(byCard.isNotEmpty()) {
+                text += "\n运气不错，在制造的时候还获得了一些副产物："
+                byCard.forEach {
+                    text += "\n${it.name} x 1"
+                }
+            }
+            return text
+        } else {
+            return PlainText("$name,ID为$cardId 的物品不能被制作！")
         }
     }
 }

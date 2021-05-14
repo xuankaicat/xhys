@@ -62,22 +62,23 @@ open class CardBackpack : IObjectMysql {
          * 用户获取卡牌
          * @param qqId Long
          * @param cardId Int
+         * @param amount Long
          * @return Boolean
          */
-        fun userGetNewCard(qqId: Long, cardId: Int): Boolean{
+        fun userGetNewCard(qqId: Long, cardId: Int, amount: Long = 1): Boolean{
             val exist = DataMysql.query<CardBackpack>("select * from cardbackpack" +
                     " where qqId = $qqId and cardId = $cardId")
             return if(exist.isEmpty()){
                 //从未获得的情况
                 DataMysql.executeSql(
                     "insert into cardbackpack(qqId, cardId, amount) " +
-                            "values ($qqId, $cardId, 1)"
+                            "values ($qqId, $cardId, $amount)"
                 )
                 true
             }else{
                 //已经有该卡牌的情况
                 DataMysql.executeSql(
-                    "update cardbackpack set amount=amount+1 " +
+                    "update cardbackpack set amount=amount+$amount " +
                             "where qqId = $qqId and cardId = $cardId"
                 )
                 false
@@ -89,11 +90,17 @@ open class CardBackpack : IObjectMysql {
          * @param qqId Long
          * @param startIndex Int
          * @param indexAmount Int
+         * @param sort Boolean
          * @return ArrayList<UserCardBackpackItem>
          */
-        fun userGetBackpackItems(qqId: Long, startIndex: Int, indexAmount: Int): ArrayList<UserCardBackpackItem> {
-            val cardArray = DataMysql.query<CardBackpack>("select cardId,amount from cardbackpack" +
-                    " where qqId = $qqId limit $startIndex,$indexAmount")
+        fun userGetBackpackItems(qqId: Long, startIndex: Int, indexAmount: Int, sort: Boolean): ArrayList<UserCardBackpackItem> {
+            var sqlStr = "select a.cardId,a.amount from cardbackpack a join cards b on a.cardId = b.id" +
+                    " where qqId = $qqId"
+            if(sort) {
+                sqlStr += " order by b.rarity desc,id"
+            }
+            sqlStr += " limit $startIndex,$indexAmount"
+            val cardArray = DataMysql.query<CardBackpack>(sqlStr)
             val result = ArrayList<UserCardBackpackItem>()
             cardArray.forEach {
                 val card = DataMysql.query<Cards>("select * from cards where id=${it.cardId}")[0]
@@ -109,7 +116,7 @@ open class CardBackpack : IObjectMysql {
          * @return Long
          */
         fun userGetBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity): Long {
-            val idStr = DataMysql.query<MyInt>("select id from cards where rarity='${rarity.name}'").toIntList().joinToString()
+            val idStr = Cards.getIdListByRarity(rarity).joinToString()
 
             return DataMysql.getValue<BigDecimal>("select sum(amount) from cardbackpack" +
                     " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
@@ -122,7 +129,7 @@ open class CardBackpack : IObjectMysql {
          * @return Long
          */
         fun userClearBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity): Long {
-            val idStr = DataMysql.query<MyInt>("select id from cards where rarity='${rarity.name}'").toIntList().joinToString()
+            val idStr = Cards.getIdListByRarity(rarity).joinToString()
             val cardAmount = DataMysql.getValue<BigDecimal>("select sum(amount) from cardbackpack" +
                     " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
 

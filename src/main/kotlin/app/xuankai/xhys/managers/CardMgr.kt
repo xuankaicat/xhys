@@ -21,6 +21,9 @@ object CardMgr {
     private val RCardPool: ArrayList<Cards> = DataMysql.query("select * from cards where rarity='R' and inPool is true")
     private val SRCardPool = DataMysql.query<Cards>("select * from cards where rarity='SR' and inPool is true")
     private val SSRCardPool = DataMysql.query<Cards>("select * from cards where rarity='SSR' and inPool is true")
+    private val SPCardPool = HashMap<String, ArrayList<Cards>>()
+    val cardPoolList = listOf("A")
+
     private val CardImgPool = HashMap<Int, BufferedImage>()
 
     private val background: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/bg.png"))
@@ -39,10 +42,12 @@ object CardMgr {
         SSRCardPool.forEach {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
+        SPCardPool["A2"] = DataMysql.query("select * from cards where id=55")
+        SPCardPool["A3"] = DataMysql.query("select * from cards where id=57")
     }
 
     private const val onePageAmount = 40
-    fun getBackpack(name : String, qqId: Long, avatarUrl : String, page: Int): BufferedImage? {
+    fun getBackpack(name : String, qqId: Long, avatarUrl : String, page: Int, sort: Boolean = true): BufferedImage? {
         val amount = CardBackpack.userGetItemAmount(qqId)
         val pageStart = onePageAmount * (page - 1)
         if(amount < pageStart + 1) return null
@@ -52,7 +57,7 @@ object CardMgr {
         val g2d = image.createGraphics()
         val fm: FontMetrics = g2d.fontMetrics
         g2d.drawImage(background, 0, 0, null)
-        val items = CardBackpack.userGetBackpackItems(qqId, pageStart, onePageAmount)
+        val items = CardBackpack.userGetBackpackItems(qqId, pageStart, onePageAmount, sort)
         var index = 0
         //画图
         for(y in 80..440 step 40){
@@ -81,20 +86,42 @@ object CardMgr {
      * 返回随机抽到的一张卡
      * @return Cards
      */
-    private fun getRandomCard(): Cards =
+    private fun getRandomCard(pool: String?): Cards =
         when((1..100).random()) {
             in 24..100 -> RCardPool.random()
-            in 3..23 -> SRCardPool.random()
-            else -> SSRCardPool.random()
+            in 3..23 -> {
+                if(pool == null){
+                    SRCardPool.random()
+                } else {
+                    //特殊卡池抽取情况20%是限定
+                    if((1..5).random() == 1) {
+                        SPCardPool[pool+"2"]?.random() ?: SRCardPool.random()
+                    } else {
+                        SRCardPool.random()
+                    }
+                }
+            }
+            else -> if(pool == null){
+                SSRCardPool.random()
+            } else {
+                //特殊卡池抽取情况40%是限定
+                if((1..5).random() <= 2) {
+                    SPCardPool[pool+"3"]?.random() ?: SSRCardPool.random()
+                } else {
+                    SSRCardPool.random()
+                }
+            }
         }
+
+    fun getRandomSSR(): Cards = SSRCardPool.random()
 
     /**
      *处理用户的单抽，返回生成的字符串
      * @param qqId Long
      * @return String
      */
-    fun getCard(qqId: Long): String {
-        val card = getRandomCard()
+    fun getCard(qqId: Long, pool: String?): String {
+        val card = getRandomCard(pool)
         val stringBuilder = StringBuilder()
         stringBuilder.append(card.name).append("(${card.rarity})")
         //处理获取卡牌事件
@@ -112,7 +139,7 @@ object CardMgr {
      * @param avatarUrl String
      * @return BufferedImage
      */
-    fun getTenCards(name : String, qqId: Long, avatarUrl : String): BufferedImage {
+    fun getTenCards(name : String, qqId: Long, avatarUrl : String, pool: String? = null): BufferedImage {
         val image = BufferedImage(640, 480, background.type)
         val g2d = image.createGraphics()
         g2d.drawImage(background, 0, 0, null)
@@ -121,7 +148,7 @@ object CardMgr {
         var silverTimes = 0
         for (y in 120..280 step 160){
             for(x in 60..500 step 110){
-                var card = getRandomCard()
+                var card = getRandomCard(pool)
                 val icon = when(card.rarity){
                     CardRarity.R-> {
                         silverTimes++
