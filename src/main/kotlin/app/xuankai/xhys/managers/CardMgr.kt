@@ -4,6 +4,7 @@ import app.xuankai.xhys.mysql.model.CardBackpack
 import app.xuankai.xhys.mysql.model.Cards
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
+import app.xuankai.xhys.mysql.model.CardGroup
 import java.awt.Color
 import java.awt.FontMetrics
 import java.awt.Graphics2D
@@ -18,9 +19,10 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 object CardMgr {
-    private val RCardPool: ArrayList<Cards> = DataMysql.query("select * from cards where rarity='R' and inPool is true")
-    private val SRCardPool = DataMysql.query<Cards>("select * from cards where rarity='SR' and inPool is true")
-    private val SSRCardPool = DataMysql.query<Cards>("select * from cards where rarity='SSR' and inPool is true")
+    private val cardList: ArrayList<Cards> = DataMysql.query("select * from cards")
+    private val RCardPool = cardList.filter { it.rarity == CardRarity.R && it.inPool }
+    private val SRCardPool = cardList.filter { it.rarity == CardRarity.SR && it.inPool }
+    private val SSRCardPool = cardList.filter { it.rarity == CardRarity.SSR && it.inPool }
     private val SPCardPool = HashMap<String, ArrayList<Cards>>()
     val cardPoolList = listOf("A")
 
@@ -33,53 +35,11 @@ object CardMgr {
     private val backpackCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/itemCover.png"))
 
     init {
-        RCardPool.forEach {
-            CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
-        }
-        SRCardPool.forEach {
-            CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
-        }
-        SSRCardPool.forEach {
+        cardList.forEach {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
         SPCardPool["A2"] = DataMysql.query("select * from cards where id=55")
         SPCardPool["A3"] = DataMysql.query("select * from cards where id=57")
-    }
-
-    private const val onePageAmount = 40
-    fun getBackpack(name : String, qqId: Long, avatarUrl : String, page: Int, sort: Boolean = true): BufferedImage? {
-        val amount = CardBackpack.userGetItemAmount(qqId)
-        val pageStart = onePageAmount * (page - 1)
-        if(amount < pageStart + 1) return null
-        val pageAmount = amount / onePageAmount + 1
-
-        val image = BufferedImage(640, 480, background.type)
-        val g2d = image.createGraphics()
-        val fm: FontMetrics = g2d.fontMetrics
-        g2d.drawImage(background, 0, 0, null)
-        val items = CardBackpack.userGetBackpackItems(qqId, pageStart, onePageAmount, sort)
-        var index = 0
-        //画图
-        for(y in 80..440 step 40){
-            for(x in 5..640 step 160){
-                val card = items[index].card
-                g2d.color = getCardFontColor(card.rarity)
-                g2d.drawImage(backpackCover, x - 4, y - 4, 163, 40, null)
-                g2d.drawImage(CardImgPool[card.id], x, y, 32, 32, null)
-                g2d.drawString(card.name, x + 40, y + 28)
-                g2d.color = Color.BLACK
-                val amountStr = "x ${items[index].amount}"
-                g2d.drawString(amountStr, x + 150 - fm.stringWidth(amountStr), y + 14)
-                g2d.drawString("ID: ${card.id}", x + 40, y + 14)
-                index++
-                if(index >= items.size) break
-            }
-            if(index >= items.size) break
-        }
-        g2d.drawAvatar(name, avatarUrl)
-        g2d.drawString("第 $page  /  $pageAmount 页", 63, 41)
-        g2d.dispose()
-        return image
     }
 
     /**
@@ -114,6 +74,62 @@ object CardMgr {
         }
 
     fun getRandomSSR(): Cards = SSRCardPool.random()
+
+//    fun getPictorialBook(name : String, qqId: Long, avatarUrl : String, page: Int): BufferedImage? {
+//        val pageStart = 4 * (page - 1)
+//        val groups = CardGroup.getAll().subList(pageStart, pageStart + 4)
+//        val regex = Regex("(?=|${groups.joinToString("|") { it.name }})")
+//        cardList.forEach {
+//            if(it.group.contains(regex)) {
+//
+//            }
+//        }
+//    }
+
+    private const val onePageAmount = 40
+    /**
+     * 处理用户的查看背包，返回生成的图像。如果页数不正确则返回null
+     * @param name String
+     * @param qqId Long
+     * @param avatarUrl String
+     * @param page Int
+     * @param sort Boolean
+     * @return BufferedImage?
+     */
+    fun getBackpack(name : String, qqId: Long, avatarUrl : String, page: Int, sort: Boolean = true): BufferedImage? {
+        val amount = CardBackpack.userGetItemAmount(qqId)
+        val pageStart = onePageAmount * (page - 1)
+        if(amount < pageStart + 1) return null
+        val pageAmount = amount / onePageAmount + 1
+
+        val image = BufferedImage(640, 480, background.type)
+        val g2d = image.createGraphics()
+        val fm: FontMetrics = g2d.fontMetrics
+        g2d.drawImage(background, 0, 0, null)
+        val items = CardBackpack.userGetBackpackItems(qqId, pageStart, onePageAmount, sort)
+        var index = 0
+        //画图
+        for(y in 80..440 step 40){
+            for(x in 5..640 step 160){
+                val card = items[index].card
+                g2d.color = getCardFontColor(card.rarity)
+                g2d.drawImage(backpackCover, x - 4, y - 4, 163, 40, null)
+                g2d.drawImage(CardImgPool[card.id], x, y, 32, 32, null)
+                g2d.drawString(card.name, x + 40, y + 28)
+                g2d.color = Color.BLACK
+                val amountStr = "x ${items[index].amount}"
+                g2d.drawString(amountStr, x + 150 - fm.stringWidth(amountStr), y + 14)
+                g2d.drawString("ID: ${card.id}", x + 40, y + 14)
+                index++
+                if(index >= items.size) break
+            }
+            if(index >= items.size) break
+        }
+        g2d.drawAvatar(name, avatarUrl)
+        g2d.drawString("第 $page  /  $pageAmount 页", 63, 41)
+        g2d.dispose()
+        return image
+    }
 
     /**
      *处理用户的单抽，返回生成的字符串
