@@ -4,15 +4,15 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Statement
+import java.util.*
+import kotlin.collections.ArrayList
 
 object DataMysql {
-    private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
-    private const val username = "root"
-    private const val password = "280814"
+    private val connPool = ConnPool()
 
     fun openConnection() :Connection?{
         return try {
-            DriverManager.getConnection(url, username, password)
+            connPool.connection
         } catch (e: Exception) {
             e.printStackTrace()
             println("Mysql连接失败")
@@ -21,8 +21,8 @@ object DataMysql {
     }
 
     fun closeConnection(conn : Connection?, stmt : Statement?){
-        conn?.close()
         stmt?.close()
+        conn?.close()
     }
 
     /**
