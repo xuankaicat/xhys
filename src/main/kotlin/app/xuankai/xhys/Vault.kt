@@ -28,7 +28,7 @@ object Vault {
      * @return Boolean
      */
     fun subCoin(qqId : Long, cost : Long): Boolean {
-        val result = DataMysql.query<Users>("select money,usedMoney from users where qqId=${qqId}")
+        val result : ArrayList<Users> = DataMysql.query("select money,usedMoney from users where qqId=${qqId}")
         val money = result[0].money!! - result[0].usedMoney
         if(money < cost) return false
         DataMysql.executeSql("update users set usedMoney=usedMoney+${cost} where qqId=${qqId}")

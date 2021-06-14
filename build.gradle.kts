@@ -5,14 +5,14 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     java
 
-    val kotlinVersion = "1.4.32"
+    val kotlinVersion = "1.5.10"
     kotlin("jvm") version kotlinVersion
 
     id("com.github.johnrengelman.shadow") version "6.1.0"//使用shadow对依赖进行打包
 }
 
 group = "app.xuankai"
-version = "202105r6.1"
+version = "202106r2"
 
 repositories {
     //maven {setUrl("http://maven.aliyun.com/nexus/content/groups/public/")}
@@ -21,12 +21,8 @@ repositories {
     jcenter()
 }
 
-tasks.withType(KotlinJvmCompile::class.java) {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
 dependencies {
-    val miraiVersion = "2.6.4"
+    val miraiVersion = "2.6.6"
 
     // 开发时使用 mirai-core-api，运行时提供 mirai-core
     api("net.mamoe", "mirai-core-api", miraiVersion)
@@ -48,11 +44,5 @@ tasks.withType<ShadowJar> {
     // 将 build.gradle 打入到 jar 中, 方便查看依赖包版本
     from("./"){
         include("build.gradle.kts")
-    }
-}
-
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions {
-        useIR = true
     }
 }

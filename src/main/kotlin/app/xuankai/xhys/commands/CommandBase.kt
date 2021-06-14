@@ -17,20 +17,14 @@ object CommandBase {
 
     private fun log() : Message =
         PlainText("""
-        |版本号：202105r6.1
-        |修复：无法使用.pool
-        |更新：
-        |1.分解指令
-        |.isenchant或.分解
-        |2.制造指令
-        |只有SSR可以被制造，每个制造需要300个材料
-        |.make <物品ID> <数量> 或.制造
-        |3.优化背包指令
-        |.bag或.backpack或.背包 背包根据稀有度排序
-        |.item或.物品 背包根据ID排序
-        |4.开放活动卡池
-        |新增ID为55与57的物品在活动卡池中概率提升
-        |使用.pool查看现有卡池
+        |版本号：202106r2
+        |1.新增2张SSR，3张SR
+        |2.2张老SSR不能再被抽取但能被制作：
+        |海克斯科技枪刃
+        |三叉戟
+        |3.活动卡池内容更新
+        |4.修复SSR合成时的描述，并且现在只能单独分解SSR
+        |5.可以使用100个材料制造SR
         """.trimMargin())
 
     private fun pool() : Message =
@@ -39,8 +33,9 @@ object CommandBase {
         |目前可以抽取的卡池如下：
         |默认卡池(78%R,20%SR,2%SSR)
         |.drawcard或.十连
-        |活动卡池(抽到SR时20%是栗子,抽到SSR时40%是菊花)
-        |(预计结束时间：202106r1)
+        |活动卡池
+        |抽到SSR时40%是时风的匕首、叮咚中的一个
+        |抽到SR时20%是发光浆果、紫水晶碎片、望远镜中的一个
         |.drawcardA或.十连A或.活动十连
         """.trimMargin())
 
@@ -51,12 +46,13 @@ object CommandBase {
         |.rp <value> 调整复读功率
         |.jrrp 获取今日人品
         |.dice 丢骰子
+        |.coin 查看硬币数量
         |.bag <page> 查看背包
         |.item <page> 以ID顺序查看背包
         |.pool 查看卡池
         |.pay <qq号> <硬币数量> 交给另一个玩家硬币
         |.send <qq号> <物品ID> <物品数量=1> 交给另一个玩家物品
-        |.isenchan 分解物品
+        |.disenchant 分解物品
         |.make <物品ID> <数量=1> 制造物品
         |.pshelp 查询付费项目帮助
         """.trimMargin())

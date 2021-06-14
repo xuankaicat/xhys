@@ -4,6 +4,7 @@ import app.xuankai.xhys.Vault
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
+import app.xuankai.xhys.mysql.enums.CardRarity.*
 import app.xuankai.xhys.mysql.model.MyInt.Companion.toIntList
 import app.xuankai.xhys.mysql.viewModel.UserCardBackpackItem
 import java.math.BigDecimal
@@ -123,6 +124,27 @@ open class CardBackpack : IObjectMysql {
         }
 
         /**
+         * 分解单个种类SSR，返回分解获得的材料数量
+         * @param qqId Long
+         * @param cardId String
+         * @param amount Int
+         * @return Long?
+         */
+        fun userDisenchantSSRItem(qqId: Long, cardId: String, amount: Int): Long? {
+            val hasAmount = DataMysql.getValue<Int>("select amount from cardbackpack" +
+                    " where qqId = $qqId and cardId = $cardId") ?: return null
+
+            if(hasAmount < amount) {
+                return 0
+            }
+            val metaAmount = (amount * 40).toLong()
+            Vault.addMaterial(qqId, metaAmount)
+            DataMysql.executeSql("update cardbackpack set amount=amount-$amount " +
+                    "where qqId=${qqId} and cardId = $cardId")
+            return metaAmount
+        }
+
+        /**
          * 分解某个稀有度重复物品的数量，返回分解获得的材料数量
          * @param qqId Long
          * @param rarity CardRarity
@@ -134,9 +156,10 @@ open class CardBackpack : IObjectMysql {
                     " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
 
             val mateAmount = when(rarity) {
-                CardRarity.R -> cardAmount
-                CardRarity.SR -> cardAmount * 5
-                CardRarity.SSR -> cardAmount * 40
+                R -> cardAmount
+                SR -> cardAmount * 5
+                SSR -> cardAmount * 40
+                UR -> cardAmount * 200
             }
             Vault.addMaterial(qqId, mateAmount)
             DataMysql.executeSql("update cardbackpack set amount=1 where qqId=${qqId} and cardId in ($idStr)")

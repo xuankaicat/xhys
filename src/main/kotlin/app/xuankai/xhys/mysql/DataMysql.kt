@@ -5,7 +5,6 @@ import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Statement
 
-
 object DataMysql {
     private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
     private const val username = "root"
@@ -52,14 +51,14 @@ object DataMysql {
         val stmt = conn?.createStatement()
         val list : ArrayList<T> = ArrayList()
         try{
-            val resultSet : ResultSet = stmt!!.executeQuery(sql)
+            val resultSet = stmt!!.executeQuery(sql)
             val rsmd = resultSet.metaData
             val columns = rsmd.columnCount
             while(resultSet.next()){
                 val obj : T = T::class.java.getConstructor().newInstance()
-                for (i in 0 until columns) {
-                    obj.add(rsmd.getColumnName(i + 1),
-                            resultSet.getObject(i + 1))
+                for (i in 1..columns) {
+                    obj.add(rsmd.getColumnName(i),
+                            resultSet.getObject(i))
                 }
                 list.add(obj)
             }

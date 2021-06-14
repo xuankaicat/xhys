@@ -4,6 +4,7 @@ import app.xuankai.xhys.mysql.model.CardBackpack
 import app.xuankai.xhys.mysql.model.Cards
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
+import app.xuankai.xhys.mysql.enums.CardRarity.*
 import app.xuankai.xhys.mysql.model.CardGroup
 import java.awt.Color
 import java.awt.FontMetrics
@@ -20,9 +21,9 @@ import kotlin.collections.HashMap
 
 object CardMgr {
     private val cardList: ArrayList<Cards> = DataMysql.query("select * from cards")
-    private val RCardPool = cardList.filter { it.rarity == CardRarity.R && it.inPool }
-    private val SRCardPool = cardList.filter { it.rarity == CardRarity.SR && it.inPool }
-    private val SSRCardPool = cardList.filter { it.rarity == CardRarity.SSR && it.inPool }
+    private val RCardPool = cardList.filter { it.rarity == R && it.inPool }
+    private val SRCardPool = cardList.filter { it.rarity == SR && it.inPool }
+    private val SSRCardPool = cardList.filter { it.rarity == SSR && it.inPool }
     private val SPCardPool = HashMap<String, ArrayList<Cards>>()
     val cardPoolList = listOf("A")
 
@@ -38,8 +39,10 @@ object CardMgr {
         cardList.forEach {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
-        SPCardPool["A2"] = DataMysql.query("select * from cards where id=55")
-        SPCardPool["A3"] = DataMysql.query("select * from cards where id=57")
+        //ssr UP
+        SPCardPool["A2"] = DataMysql.query("select * from cards where id=86 or id=87")
+        //sr UP
+        SPCardPool["A3"] = DataMysql.query("select * from cards where id=88 or id=89 or id=90")
     }
 
     /**
@@ -73,6 +76,7 @@ object CardMgr {
             }
         }
 
+    fun getRandomSR(): Cards = SRCardPool.random()
     fun getRandomSSR(): Cards = SSRCardPool.random()
 
 //    fun getPictorialBook(name : String, qqId: Long, avatarUrl : String, page: Int): BufferedImage? {
@@ -166,7 +170,7 @@ object CardMgr {
             for(x in 60..500 step 110){
                 var card = getRandomCard(pool)
                 val icon = when(card.rarity){
-                    CardRarity.R-> {
+                    R -> {
                         silverTimes++
                         if(silverTimes != 10) {
                             silverCover
@@ -175,7 +179,7 @@ object CardMgr {
                             yellowCover
                         }
                     }
-                    CardRarity.SR-> yellowCover
+                    SR -> yellowCover
                     else-> colorCover
                 }
                 //背景方块
@@ -212,9 +216,10 @@ object CardMgr {
     }
 
     private fun getCardFontColor(rarity: CardRarity): Color = when(rarity){
-        CardRarity.R -> Color.BLUE
-        CardRarity.SR -> Color(255, 0, 255)
-        CardRarity.SSR -> Color(255, 155, 0)
+        R -> Color.BLUE
+        SR -> Color(255, 0, 255)
+        SSR -> Color(255, 155, 0)
+        UR -> Color(32, 128, 255)
     }
 
     /**
