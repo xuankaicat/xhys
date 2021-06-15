@@ -28,10 +28,21 @@ import kotlin.collections.HashMap
 import kotlin.reflect.KSuspendFunction2
 
 object CommandMgr {
-    private var cmdStrPattern = "|log|help|pshelp|dice|pool"
+    private var cmdStrPattern = ""
+    //不需要任何参数的指令
+    private val baseCmd = HashMap<String, () -> Message>()
+    //需要当前环境信息的指令，形如 (MessageEvent, List<String>) -> Message
     private val cmd = HashMap<String, Any>()
 
     init {
+        baseCmd.apply {
+            register(CommandBase::log, "log")
+            register(CommandBase::help, "help", "帮助")
+            register(CommandBase::psHelp, "pshelp")
+            register(CommandBase::dice, "dice", "骰子")
+            register(CommandBase::pool, "pool", "卡池")
+        }
+
         cmd.apply {
             register(CommandJrrp::get, "jrrp")
             register(Repeat::commandRp, "rp")
@@ -48,6 +59,16 @@ object CommandMgr {
             register(::commandSend, "send")
             register(::commandDisenchant, "disenchant", "分解", "材料")
             register(::commandMake, "make", "制造", "合成")
+        }
+    }
+
+    private fun HashMap<String, () -> Message>.register(
+        f: () -> Message,
+        vararg cmdNames: String) {
+
+        for (name in cmdNames) {
+            this[name] = f
+            cmdStrPattern += "|${name}"
         }
     }
 
@@ -71,8 +92,20 @@ object CommandMgr {
         }
     }
 
-    private val pattern = Pattern.compile("^[.|。](?<name>=$cmdStrPattern)\\s*?(?<params>.*)$",
+    private val pattern = Pattern.compile("^[.|。]\\s?(?<name>\\S+)\\s*?(?<params>.*)$",
         Pattern.CASE_INSENSITIVE)
+    private fun tryGetCmdFun(cmdText: String): Any? {
+        return cmd[cmdText] ?: baseCmd[cmdText]
+    }
+
+    private suspend fun getCmdFunResult(f: Any?, args: List<String>, messageEvent: MessageEvent): Message {
+        @Suppress("UNCHECKED_CAST")
+        return (f as? (MessageEvent, List<String>) -> Message)?.invoke(messageEvent, args)
+            ?: (f as? () -> Message)?.let { it() }
+            ?: (f as? KSuspendFunction2<MessageEvent, List<String>, Message>)?.invoke(messageEvent, args)
+            ?: PlainText("")
+    }
+
     private suspend fun tryParse(messageEvent: MessageEvent): Message? {
         val matcher = pattern.matcher(messageEvent.message[1].toString())
         return if (matcher.find()) {
@@ -80,21 +113,22 @@ object CommandMgr {
             val params = matcher.group("params")
             val args = params?.trim()?.split(' ')?.toList()?.filter { it.trim() != "" } ?: listOf()
             //运行指令函数
-            val cmdtext = matcher.group("name").lowercase(Locale.getDefault())
-            val c = cmd[cmdtext]
+            val cmdText = matcher.group("name").lowercase(Locale.getDefault())
+            val c = cmd[cmdText]
             if (c == null) {
-                val baseCmdResult = CommandBase.getCommand(cmdtext)
-                if (baseCmdResult != null) return baseCmdResult
-                val fixedcmdtext = CommandUtils.tryCheck(cmdtext)
-                return if (fixedcmdtext != null) {
-                    PlainText("小黄勇士猜你想用的指令是${cmd},\n").plus(useCommand(fixedcmdtext, messageEvent))
+                //不在指令注册列表中则先去基础指令中寻找
+                val baseCmd = baseCmd[cmdText]
+                if (baseCmd != null) return baseCmd()
+                //试图修复指令
+                val fixedCmdText = CommandUtils.tryCheck(cmdText)
+                return if (fixedCmdText != null) {
+                    PlainText("小黄勇士猜你想用的指令是$fixedCmdText,\n")
+                        .plus(getCmdFunResult(tryGetCmdFun(fixedCmdText), args, messageEvent))
                 } else {
                     PlainText("小黄勇士听不懂你的指令！输入.help来看看有什么可以用的！")
                 }
             }
-            @Suppress("UNCHECKED_CAST")
-            (c as? (MessageEvent, List<String>) -> Message)?.invoke(messageEvent, args)
-                ?: (c as? KSuspendFunction2<MessageEvent, List<String>, Message>)?.invoke(messageEvent, args)
+            getCmdFunResult(c, args, messageEvent)
         } else {
             null
         }
@@ -113,14 +147,6 @@ object CommandMgr {
                     }
                 }
             }
-        }
-    }
-
-    private fun useCommand(command : String, event: MessageEvent) : Message {
-        return when(command){
-            "jrrp" -> CommandJrrp.get(event)
-            "money","coin" -> commandMoney(event)
-            else -> CommandBase.getCommand(command) ?: PlainText("Error")
         }
     }
 

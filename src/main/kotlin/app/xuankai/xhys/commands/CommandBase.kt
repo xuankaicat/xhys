@@ -5,29 +5,13 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 
 object CommandBase {
-    fun getCommand(command: String) : Message? =
-        when(command){
-            "log" -> log()
-            "help" -> help()
-            "pshelp" -> psHelp()
-            "dice" -> dice()
-            "pool" -> pool()
-            else -> null
-        }
-
-    private fun log() : Message =
+    fun log() : Message =
         PlainText("""
-        |版本号：202106r2
-        |1.新增2张SSR，3张SR
-        |2.2张老SSR不能再被抽取但能被制作：
-        |海克斯科技枪刃
-        |三叉戟
-        |3.活动卡池内容更新
-        |4.修复SSR合成时的描述，并且现在只能单独分解SSR
-        |5.可以使用100个材料制造SR
+        |版本号：202106r3
+        |修复自动修复指令失败的BUG
         """.trimMargin())
 
-    private fun pool() : Message =
+    fun pool() : Message =
         PlainText("""
         |每次十连会消耗100枚硬币
         |目前可以抽取的卡池如下：
@@ -39,7 +23,7 @@ object CommandBase {
         |.drawcardA或.十连A或.活动十连
         """.trimMargin())
 
-    private fun help() : Message =
+    fun help() : Message =
         PlainText("""
         |这些是小黄勇士听得懂的话：
         |.log 获取最近的更新内容
@@ -57,7 +41,7 @@ object CommandBase {
         |.pshelp 查询付费项目帮助
         """.trimMargin())
 
-    private fun psHelp() : Message =
+    fun psHelp() : Message =
         PlainText("""
         |这些是小黄勇士的付费项目：
         |【10枚硬币可以】
@@ -70,5 +54,5 @@ object CommandBase {
         |.活动十连 活动期间十连抽活动卡池
         """.trimMargin())
 
-    private fun dice(): Message = Dice.random()
+    fun dice(): Message = Dice.random()
 }
