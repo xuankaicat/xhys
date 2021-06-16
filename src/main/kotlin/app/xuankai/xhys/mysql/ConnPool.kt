@@ -15,7 +15,7 @@ import javax.sql.DataSource
 class ConnPool : DataSource{
 
     companion object {
-        private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
+        private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false&interactive_timeout=28800000&wait_timeout=28800000"
         private const val username = "root"
         private const val password = "280814"
         private const val poolSize = 10
