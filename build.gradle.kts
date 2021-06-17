@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "app.xuankai"
-version = "202106r4"
+version = "2021m06r4-2"
 
 repositories {
     //maven {setUrl("http://maven.aliyun.com/nexus/content/groups/public/")}

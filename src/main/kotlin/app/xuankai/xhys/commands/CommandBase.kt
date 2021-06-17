@@ -7,8 +7,8 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：202106r4
-        |修复超时导致的BUG
+        |版本号：2021m06r4-2
+        |尝试修复超时导致的BUG
         """.trimMargin())
 
     fun pool() : Message =

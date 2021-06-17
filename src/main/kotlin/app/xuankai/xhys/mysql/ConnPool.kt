@@ -1,12 +1,9 @@
 package app.xuankai.xhys.mysql
 
+import kotlinx.coroutines.*
 import okhttp3.internal.wait
 import java.io.PrintWriter
-import java.lang.reflect.InvocationHandler
-import java.lang.reflect.Method
-import java.lang.reflect.Proxy
 import java.sql.Connection
-import java.sql.Driver
 import java.sql.DriverManager
 import java.util.*
 import java.util.logging.Logger
@@ -21,13 +18,33 @@ class ConnPool : DataSource{
         private const val poolSize = 10
 
         val connPool = LinkedList<Connection>()
+
+        fun initConnPool() {
+            connPool.clear()
+            for(i in 0 until poolSize) {
+                val conn = DriverManager.getConnection(url, username, password)
+                connPool.add(conn)
+            }
+        }
+
+        fun checkValid() {
+            CoroutineScope(Dispatchers.Default).launch {
+                repeat(100000) {
+                    delay(28800000L)
+                    if(connPool.isNotEmpty() && !connPool.first.isValid(5)) {
+                        for (conn in connPool) {
+                            conn.close()
+                        }
+                        initConnPool()
+                    }
+                }
+            }
+        }
     }
 
     init {
-        for(i in 0 until poolSize) {
-            val conn = DriverManager.getConnection(url, username, password)
-            connPool.add(conn)
-        }
+        initConnPool()
+        checkValid()
     }
 
     override fun getConnection(): Connection {
