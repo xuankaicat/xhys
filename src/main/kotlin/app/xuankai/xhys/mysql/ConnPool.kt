@@ -31,7 +31,7 @@ class ConnPool : DataSource{
             CoroutineScope(Dispatchers.Default).launch {
                 repeat(100000) {
                     delay(28800000L)
-                    if(connPool.isNotEmpty() && !connPool.first.isValid(5)) {
+                    if(connPool.isNotEmpty()) {
                         for (conn in connPool) {
                             conn.close()
                         }
