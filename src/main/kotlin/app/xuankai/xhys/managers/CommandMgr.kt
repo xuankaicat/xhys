@@ -134,7 +134,7 @@ object CommandMgr {
         }
     }
 
-    fun XhysMiraiBot.baseCommand(){
+    fun XhysMiraiBot.initCommandSystem(){
         apply {
             miraiBot.eventChannel.subscribeMessages {
                 (startsWith(".") or startsWith("。")){

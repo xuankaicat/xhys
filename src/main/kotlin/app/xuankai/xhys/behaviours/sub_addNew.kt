@@ -1,8 +1,8 @@
-package app.xuankai.xhys
+package app.xuankai.xhys.behaviours
 
+import app.xuankai.xhys.XhysMiraiBot
 import net.mamoe.mirai.event.ConcurrencyKind
 import net.mamoe.mirai.event.EventPriority
-import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.globalEventChannel

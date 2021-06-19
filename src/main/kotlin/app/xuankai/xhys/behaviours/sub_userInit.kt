@@ -1,11 +1,12 @@
-package app.xuankai.xhys
+package app.xuankai.xhys.behaviours
 
+import app.xuankai.xhys.XhysMiraiBot
 import net.mamoe.mirai.event.subscribeMessages
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.model.Users
 import net.mamoe.mirai.event.EventPriority
 
-fun XhysMiraiBot.userInit(){
+fun XhysMiraiBot.initExistingUsers(){
     apply {
         miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
             (startsWith(".") or startsWith("。")) {

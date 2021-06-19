@@ -1,9 +1,9 @@
-package app.xuankai.xhys
+package app.xuankai.xhys.behaviours
 
+import app.xuankai.xhys.XhysMiraiBot
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
-import java.io.File
 
 
 fun XhysMiraiBot.sendimg(){

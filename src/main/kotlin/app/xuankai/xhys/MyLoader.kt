@@ -1,6 +1,7 @@
 package app.xuankai.xhys
 
-import app.xuankai.xhys.managers.CommandMgr.baseCommand
+import app.xuankai.xhys.behaviours.*
+import app.xuankai.xhys.managers.CommandMgr.initCommandSystem
 import app.xuankai.xhys.behaviours.Eat.eat
 import app.xuankai.xhys.behaviours.Repeat.repeat
 import app.xuankai.xhys.mysql.DataMysql
@@ -28,11 +29,11 @@ suspend fun main(args: Array<String>) {
             foodBlackList.add(it.eatStr)
         }
 
-        userInit()//初始化新用户
+        initExistingUsers()//初始化新用户
 
         addNew()//添加新朋友
         atEvent()//at
-        baseCommand()//基本指令
+        initCommandSystem()//指令系统
         baseReply()//基本回复
         repeat()//复读机
         eat()//吃

@@ -1,11 +1,9 @@
-package app.xuankai.xhys
+package app.xuankai.xhys.behaviours
 
+import app.xuankai.xhys.XhysMiraiBot
 import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.events.NudgeEvent
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.sendTo
-import net.mamoe.mirai.utils.MiraiExperimentalApi
 
 fun XhysMiraiBot.nudgeBot(){
     apply {
@@ -18,8 +16,5 @@ fun XhysMiraiBot.nudgeBot(){
                 }
             }
         }
-        //miraiBot.subscribeAlways<MemberNudgedEvent> {
-        //    PlainText("${from.nameCard}戳了戳${member.nameCard}").sendTo((from as Member).group)
-        //}
     }
 }

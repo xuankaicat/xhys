@@ -5,7 +5,6 @@ import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.enums.CardRarity.*
-import app.xuankai.xhys.mysql.model.MyInt.Companion.toIntList
 import app.xuankai.xhys.mysql.viewModel.UserCardBackpackItem
 import java.math.BigDecimal
 

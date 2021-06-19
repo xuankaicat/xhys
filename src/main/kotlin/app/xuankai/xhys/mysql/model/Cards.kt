@@ -3,7 +3,6 @@ package app.xuankai.xhys.mysql.model
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
-import app.xuankai.xhys.mysql.model.MyInt.Companion.toIntList
 
 open class Cards : IObjectMysql {
     var id : Int = 0
@@ -34,7 +33,7 @@ open class Cards : IObjectMysql {
         fun findById(id : Int) = DataMysql.query<Cards>("select * from cards where id=${id}").firstOrNull()
 
         fun getIdListByRarity(rarity: CardRarity): List<Int> {
-            return DataMysql.query<MyInt>("select id from cards where rarity='${rarity.name}'").toIntList()
+            return DataMysql.query<Cards>("select id from cards where rarity='${rarity.name}'").map { it.id }
         }
     }
 }

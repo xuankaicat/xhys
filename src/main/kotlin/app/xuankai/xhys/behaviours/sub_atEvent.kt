@@ -1,5 +1,6 @@
-package app.xuankai.xhys
+package app.xuankai.xhys.behaviours
 
+import app.xuankai.xhys.XhysMiraiBot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.At

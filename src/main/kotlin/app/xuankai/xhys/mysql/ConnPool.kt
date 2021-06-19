@@ -9,10 +9,13 @@ import java.util.*
 import java.util.logging.Logger
 import javax.sql.DataSource
 
+/**
+ * 数据库连接池类
+ */
 class ConnPool : DataSource{
 
     companion object {
-        private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false&interactive_timeout=28800000&wait_timeout=28800000"
+        private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
         private const val username = "root"
         private const val password = "280814"
         private const val poolSize = 10
@@ -28,8 +31,9 @@ class ConnPool : DataSource{
         }
 
         fun checkValid() {
+            //每8小时强制刷新一次连接池中的所有连接以防止过期
             CoroutineScope(Dispatchers.Default).launch {
-                repeat(100000) {
+                while(true) {
                     delay(28800000L)
                     if(connPool.isNotEmpty()) {
                         for (conn in connPool) {
@@ -74,4 +78,14 @@ class ConnPool : DataSource{
     override fun isWrapperFor(iface: Class<*>?): Boolean = false
 
     override fun getConnection(username: String?, password: String?): Connection? = null
+}
+
+/**
+ * 数据库连接池中的连接的代理类
+ * @property conn Connection 要代理的连接
+ */
+class ConnPoolProxy(private val conn: Connection): Connection by conn {
+    override fun close() {
+        ConnPool.connPool.add(conn)
+    }
 }

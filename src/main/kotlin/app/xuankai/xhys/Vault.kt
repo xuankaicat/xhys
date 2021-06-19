@@ -3,8 +3,11 @@ package app.xuankai.xhys
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.model.Users
 
+/**
+ * 用户交易操作的类
+ */
 object Vault {
-    const val canNotEffortText = "%s,你硬币不够了！"
+    const val canNotEffortText = "%s,你硬币不够了！" //硬币不足以支付时的文字
 
     /**
      * 用户qqId将amount枚硬币交给用户orderQQId，硬币不够则返回false
