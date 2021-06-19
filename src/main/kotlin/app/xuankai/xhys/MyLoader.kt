@@ -2,28 +2,21 @@ package app.xuankai.xhys
 
 import app.xuankai.xhys.managers.CommandMgr.baseCommand
 import app.xuankai.xhys.behaviours.Eat.eat
-import app.xuankai.xhys.behaviours.Repeat
 import app.xuankai.xhys.behaviours.Repeat.repeat
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.model.FoodBlackList
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.utils.BotConfiguration
+import kotlin.system.exitProcess
 
 suspend fun main(args: Array<String>) {
-    var test = false
-    if(args.isNotEmpty()){
-        test = args[0] == "test"
+    if(args.size != 2){
+        println("程序启动参数应为账号 密码")
+        exitProcess(0)
     }
-    val qqId : Long
-    val password : String
-    if(test){
-        qqId = 2011132136L//Bot的QQ号，需为Long类型，在结尾处添加大写L
-        password = "windowswzp"//Bot的密码
-    }else{
-        qqId = 1586056857L//Bot的QQ号，需为Long类型，在结尾处添加大写L
-        password = "qscvb123mmqq"//Bot的密码
-    }
+    val qqId : Long = args[0].toLong()
+    val password : String = args[1]
 
     XhysMiraiBot.apply {
         miraiBot = BotFactory.newBot(qqId, password) {
