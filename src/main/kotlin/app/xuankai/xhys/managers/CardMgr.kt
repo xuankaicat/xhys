@@ -5,7 +5,6 @@ import app.xuankai.xhys.mysql.model.Cards
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.enums.CardRarity.*
-import app.xuankai.xhys.mysql.model.CardGroup
 import java.awt.Color
 import java.awt.FontMetrics
 import java.awt.Graphics2D
@@ -24,6 +23,7 @@ object CardMgr {
     private val RCardPool = cardList.filter { it.rarity == R && it.inPool }
     private val SRCardPool = cardList.filter { it.rarity == SR && it.inPool }
     private val SSRCardPool = cardList.filter { it.rarity == SSR && it.inPool }
+    private val URCardPool = cardList.filter { it.rarity == UR && it.inPool }
     private val SPCardPool = HashMap<String, ArrayList<Cards>>()
     val cardPoolList = listOf("A")
 
@@ -33,6 +33,7 @@ object CardMgr {
     private val silverCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/square_silver.png"))
     private val yellowCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/square_yellow.png"))
     private val colorCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/square_color.png"))
+    private val blueCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/square_blue.png"))
     private val backpackCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/itemCover.png"))
 
     init {
@@ -40,9 +41,9 @@ object CardMgr {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
         //ssr UP
-        SPCardPool["A2"] = DataMysql.query("select * from cards where id=86 or id=87")
+        SPCardPool["ASSR"] = DataMysql.query("select * from cards where id=93 or id=94 or id=96 or id=97")
         //sr UP
-        SPCardPool["A3"] = DataMysql.query("select * from cards where id=88 or id=89 or id=90")
+        SPCardPool["ASR"] = DataMysql.query("select * from cards where id=109 or id=110 or id=111")
     }
 
     /**
@@ -51,33 +52,42 @@ object CardMgr {
      */
     private fun getRandomCard(pool: String?): Cards =
         when((1..100).random()) {
-            in 24..100 -> RCardPool.random()
+            in 24..100 -> getRandomR()
             in 3..23 -> {
                 if(pool == null){
-                    SRCardPool.random()
+                    getRandomSR()
                 } else {
                     //特殊卡池抽取情况20%是限定
                     if((1..5).random() == 1) {
-                        SPCardPool[pool+"2"]?.random() ?: SRCardPool.random()
+                        getRandomSPSR(pool)
                     } else {
-                        SRCardPool.random()
+                        getRandomSR()
                     }
                 }
             }
             else -> if(pool == null){
-                SSRCardPool.random()
+                getRandomSSR()
             } else {
-                //特殊卡池抽取情况40%是限定
-                if((1..5).random() <= 2) {
-                    SPCardPool[pool+"3"]?.random() ?: SSRCardPool.random()
+                //特殊卡池抽取情况60%是限定
+                if((1..5).random() <= 3) {
+                    getRandomSPSSR(pool)
                 } else {
-                    SSRCardPool.random()
+                    getRandomSSR()
                 }
             }
         }
 
+    fun getRandomR(): Cards = RCardPool.random()
     fun getRandomSR(): Cards = SRCardPool.random()
-    fun getRandomSSR(): Cards = SSRCardPool.random()
+    fun getRandomSPSR(pool: String): Cards = SPCardPool[pool+"SR"]?.random() ?: SRCardPool.random()
+    fun getRandomSPSSR(pool: String): Cards {
+        if((1..50).random() == 1) return URCardPool.random()
+        return SPCardPool[pool+"SSR"]?.random() ?: SSRCardPool.random()
+    }
+    fun getRandomSSR(): Cards {
+        if((1..50).random() == 1) return URCardPool.random()
+        return SSRCardPool.random()
+    }
 
 //    fun getPictorialBook(name : String, qqId: Long, avatarUrl : String, page: Int): BufferedImage? {
 //        val pageStart = 4 * (page - 1)
@@ -119,7 +129,7 @@ object CardMgr {
                 g2d.color = getCardFontColor(card.rarity)
                 g2d.drawImage(backpackCover, x - 4, y - 4, 163, 40, null)
                 g2d.drawImage(CardImgPool[card.id], x, y, 32, 32, null)
-                g2d.drawString(card.name, x + 40, y + 28)
+                g2d.drawCardName(card, x + 40, y + 28)
                 g2d.color = Color.BLACK
                 val amountStr = "x ${items[index].amount}"
                 g2d.drawString(amountStr, x + 150 - fm.stringWidth(amountStr), y + 14)
@@ -180,15 +190,16 @@ object CardMgr {
                         }
                     }
                     SR -> yellowCover
+                    UR -> blueCover
                     else-> colorCover
                 }
                 //背景方块
                 g2d.drawImage(icon, x, y, icon.width, icon.height, null)
                 //实际内容
-                g2d.color = getCardFontColor(card.rarity)
                 val cardImg = CardImgPool[card.id]
                 g2d.drawImage(cardImg, x, y, icon.width, icon.height, null)
-                g2d.drawString(card.name, x + (80 - fm.stringWidth(card.name)) / 2, y + 100)
+                val strX = x + (80 - fm.stringWidth(card.name)) / 2
+                g2d.drawCardName(card, strX, y + 100)
                 //处理获取卡牌事件
                 if(getCardEvent(qqId, card)){
                     //首次获得显示new标识
@@ -219,7 +230,36 @@ object CardMgr {
         R -> Color.BLUE
         SR -> Color(255, 0, 255)
         SSR -> Color(255, 155, 0)
-        UR -> Color(32, 128, 255)
+        UR -> when((1..6).random()) {
+            1-> Color(90, 255, (0..255).random())
+            2-> Color(90, (0..255).random(), 255)
+            3-> Color(255, 90, (0..255).random())
+            4-> Color(255, (0..255).random(), 90)
+            5-> Color((0..255).random(), 90, 255)
+            6-> Color((0..255).random(), 255, 90)
+            else -> Color(255,255,255)
+        }
+    }
+
+    /**
+     * 绘制卡牌名称，绘制结束后不会把画笔颜色还原
+     * @receiver Graphics2D
+     * @param card Cards 要绘制的卡牌
+     * @param x Int
+     * @param y Int
+     */
+    private fun Graphics2D.drawCardName(card: Cards, x: Int, y:Int) {
+        if(card.rarity == UR) {
+            var charX = x
+            for(char in card.name) {
+                this.color = getCardFontColor(UR)
+                this.drawString(char.toString(), charX, y)
+                charX += this.fontMetrics.charWidth(char)
+            }
+        } else {
+            this.color = getCardFontColor(card.rarity)
+            this.drawString(card.name, x, y)
+        }
     }
 
     /**

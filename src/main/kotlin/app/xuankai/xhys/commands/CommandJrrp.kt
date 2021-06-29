@@ -3,6 +3,8 @@ package app.xuankai.xhys.commands
 import app.xuankai.xhys.Vault
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.model.Users
+import app.xuankai.xhys.utils.MyUserInfo.Companion.getMyUserInfo
+import io.ktor.util.date.*
 import javafx.application.Application.launch
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -47,8 +49,14 @@ object CommandJrrp {
             val calendar = Calendar.getInstance()
             //calendar.timeInMillis = (time * 1000).toLong()
             val hour = calendar.get(Calendar.HOUR_OF_DAY)
-            if(!(hour in 6..22)){
-                extraString = "建议早点睡。"
+            if(hour !in 4..22){
+                //val userInfo = source.sender.getMyUserInfo()
+//                if(source.sender.id == 2366937214L && LocalDate.now().month.value == 6
+//                        && LocalDate.now().dayOfMonth == 29) {
+//                        extraString = "热知识：今天是一只红色围巾狐狸的生日。宝贝生日快乐！"
+//                } else{
+                    extraString = "建议早点睡。"
+                //}
             }else{
                 extraString = when (randoms) {
                     1 -> "事到如今已经没什么好担心的了不是嘛？"

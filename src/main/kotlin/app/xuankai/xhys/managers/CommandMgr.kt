@@ -59,7 +59,23 @@ object CommandMgr {
             register(::commandSend, "send")
             register(::commandDisenchant, "disenchant", "分解", "材料")
             register(::commandMake, "make", "制造", "合成")
+
+            register(::commandUpdateVersionControl, "UpdateVersionControl")
         }
+    }
+
+    private fun commandUpdateVersionControl(msg : MessageEvent, args: List<String>) : Message {
+        if(args.isNotEmpty()) return PlainText("")
+        if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
+        val qqIdList = DataMysql.query<Users>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= 80")
+        val stringBuilder = StringBuilder("insert into cardbackpack(qqId, cardId, amount) values")
+        var first = true
+        for(id in qqIdList.map { it.qqId }) {
+            if(first) first = false else stringBuilder.append(',')
+            stringBuilder.append("($id, 91, 1)")
+        }
+        DataMysql.executeSql(stringBuilder.toString())
+        return PlainText("升级成功，语句为$stringBuilder")
     }
 
     private fun HashMap<String, () -> Message>.register(
@@ -92,7 +108,7 @@ object CommandMgr {
         }
     }
 
-    private val pattern = Pattern.compile("^[.|。]\\s?(?<name>\\S+)\\s*?(?<params>.*)$",
+    private val pattern = Pattern.compile("^[.|。]\\s?(?<name>\\D+)\\s*?(?<params>.*)$",
         Pattern.CASE_INSENSITIVE)
     private fun tryGetCmdFun(cmdText: String): Any? {
         return cmd[cmdText] ?: baseCmd[cmdText]
@@ -306,6 +322,8 @@ object CommandMgr {
             //执行分解的情况
             val rarity = valueOf(args[0].uppercase(Locale.getDefault()))
 
+            if(rarity == UR) return PlainText("UR品质的物品目前不支持分解！")
+
             if(rarity == SSR) {
                 //SSR不能一次全部分解
                 if(args.size < 2) return PlainText("SSR不支持一键分解！请在后面跟上要分解的物品ID！")
@@ -342,7 +360,18 @@ object CommandMgr {
         val metaCost: Long
         val byCard = ArrayList<Cards>()
         when (card?.rarity) {
-            R -> return PlainText("$name,R品质的物品不能被制作！")
+            R -> {
+                metaCost = amount * 80
+                if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个R制造需要80个材料！")
+
+                for (i in 0 until amount) {
+                    if((1..10).random() == 1) {
+                        val rdCard = CardMgr.getRandomR()
+                        byCard.add(rdCard)
+                        CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                    }
+                }
+            }
             SR -> {
                 metaCost = amount * 100
                 if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SR制造需要100个材料！")

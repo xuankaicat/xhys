@@ -7,19 +7,21 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m06r5
-        |升级框架版本
+        |版本号：2021m07r1
+        |更新卡池（ID91~111）
+        |其中ID为91的物品为收集至少80种物品的额外奖励
+        |R品质的物品可以被制造，每个消耗80个材料
         """.trimMargin())
 
     fun pool() : Message =
         PlainText("""
         |每次十连会消耗100枚硬币
         |目前可以抽取的卡池如下：
-        |默认卡池(78%R,20%SR,2%SSR)
+        |默认卡池(78%R,20%SR,1.96%SSR,0.04%UR)
         |.drawcard或.十连
         |活动卡池
-        |抽到SSR时40%是时风的匕首、叮咚中的一个
-        |抽到SR时20%是发光浆果、紫水晶碎片、望远镜中的一个
+        |抽到SSR时60%是贝母、斯沃激焰剑、幸运的小亚、银翼中的一个
+        |抽到SR时20%是鼠勇士中的一个
         |.drawcardA或.十连A或.活动十连
         """.trimMargin())
 
