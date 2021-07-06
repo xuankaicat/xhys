@@ -18,7 +18,7 @@ class ConnPool : DataSource{
         private const val url = "jdbc:mysql://127.0.0.1:3306/xhys?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&tinyInt1isBit=false"
         private const val username = "root"
         private const val password = "280814"
-        private const val poolSize = 10
+        private const val poolSize = 20
 
         val connPool = LinkedList<Connection>()
 
@@ -52,13 +52,7 @@ class ConnPool : DataSource{
     }
 
     override fun getConnection(): Connection {
-        while(connPool.size == 0) {
-            try {
-                this.wait()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-        }
+        if(connPool.size == 0) return DriverManager.getConnection(url, username, password)
         val conn = connPool.removeFirst()
         return ConnPoolProxy(conn)
     }

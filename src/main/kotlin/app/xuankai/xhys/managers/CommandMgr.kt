@@ -60,7 +60,7 @@ object CommandMgr {
             register(::commandDisenchant, "disenchant", "分解", "材料")
             register(::commandMake, "make", "制造", "合成")
 
-            register(::commandUpdateVersionControl, "UpdateVersionControl")
+            register(::commandUpdateVersionControl, "uvc")
         }
     }
 
@@ -108,7 +108,7 @@ object CommandMgr {
         }
     }
 
-    private val pattern = Pattern.compile("^[.|。]\\s?(?<name>\\D+)\\s*?(?<params>.*)$",
+    private val pattern = Pattern.compile("^[.|。]\\s?(?<name>\\S+)\\s*?(?<params>.*)$",
         Pattern.CASE_INSENSITIVE)
     private fun tryGetCmdFun(cmdText: String): Any? {
         return cmd[cmdText] ?: baseCmd[cmdText]
@@ -308,10 +308,10 @@ object CommandMgr {
             stringBuilder.apply {
                 if(rAmount != 0L || srAmount != 0L || ssrAmount != 0L) {
                     appendLine("这些是你的分解结果和方法：")
-                    if(rAmount != 0L) appendLine("一共有 $rAmount 个重复的R品质物品，分解可以得到 $rAmount 个材料(使用.disenchantR分解所有重复R品质物品)")
-                    if(srAmount != 0L) appendLine("一共有 $srAmount 个重复的SR品质物品，分解可以得到 ${srAmount * 5} 个材料(使用.disenchantSR分解所有重复SR品质物品)")
+                    if(rAmount != 0L) appendLine("一共有 $rAmount 个重复的R品质物品，分解可以得到 $rAmount 个材料(使用.disenchant R分解所有重复R品质物品)")
+                    if(srAmount != 0L) appendLine("一共有 $srAmount 个重复的SR品质物品，分解可以得到 ${srAmount * 5} 个材料(使用.disenchant SR分解所有重复SR品质物品)")
                     if(ssrAmount != 0L) {
-                        appendLine("一共有 $ssrAmount 个重复的SSR品质物品(使用.disenchantSSR <ID> <数量=1>分解SSR)")
+                        appendLine("一共有 $ssrAmount 个重复的SSR品质物品(使用.disenchant SSR <ID> <数量=1>分解SSR)")
                     }
                 } else {
                     appendLine("目前没有任何东西可以分解！")

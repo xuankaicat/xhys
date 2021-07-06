@@ -7,7 +7,7 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m07r1
+        |版本号：2021m07r1v3
         |更新卡池（ID91~111）
         |其中ID为91的物品为收集至少80种物品的额外奖励
         |R品质的物品可以被制造，每个消耗80个材料
