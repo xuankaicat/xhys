@@ -5,6 +5,7 @@ import app.xuankai.xhys.XhysMiraiBot
 import app.xuankai.xhys.behaviours.Repeat
 import app.xuankai.xhys.commands.CommandBase
 import app.xuankai.xhys.commands.CommandJrrp
+import app.xuankai.xhys.commands.CommandRule
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity.*
 import app.xuankai.xhys.mysql.model.CardBackpack
@@ -14,6 +15,8 @@ import app.xuankai.xhys.mysql.model.Users
 import app.xuankai.xhys.utils.CommandUtils
 import app.xuankai.xhys.utils.format
 import app.xuankai.xhys.utils.toInputStream
+import net.mamoe.mirai.contact.Group
+import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.Message
@@ -59,6 +62,7 @@ object CommandMgr {
             register(::commandSend, "send")
             register(::commandDisenchant, "disenchant", "分解", "材料")
             register(::commandMake, "make", "制造", "合成")
+            register(CommandRule::get, "rule")
 
             register(::commandUpdateVersionControl, "uvc")
         }
@@ -152,14 +156,13 @@ object CommandMgr {
 
     fun XhysMiraiBot.initCommandSystem(){
         apply {
-            miraiBot.eventChannel.subscribeMessages {
+            miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
                 (startsWith(".") or startsWith("。")){
                     val result = tryParse(this)
                     if(result != null) {
-                        lastMsg.remove(id)
-                        if(result.toString().trim().isNotEmpty()){
-                            subject.sendMessage(result)
-                        }
+                        if(source.subject is Group) lastMsg.remove(source.subject.id)
+                        if(result.toString().trim().isNotEmpty()) subject.sendMessage(result)
+                        intercept()
                     }
                 }
             }

@@ -9,14 +9,18 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 fun XhysMiraiBot.sendimg(){
     apply {
         miraiBot.eventChannel.subscribeMessages {
-            (containsAny("?", "？")) {
+            (containsAny("?", "？")) block@ {
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendQuestionImage) return@block
+                } else {
+                    id = source.fromId
+                }
                 if(message[1].toString() == "?" || message[1].toString() == "？"){
                     this.javaClass.getResourceAsStream("/wenhao/不许问号.jpg")!!.sendAsImageTo(subject)
-                    //val file = File(".", "testpic.jpg")
-                    //file.inputStream().sendAsImageTo(subject)
                 }else{
                     if((1..4).random() != 1){
-                        id = if (subject is Group) source.targetId else source.fromId
                         val dir = when((1..14).random()){
                             1->"/wenhao/wenhao1.jpg"
                             2->"/wenhao/wenhao2.png"
@@ -38,8 +42,14 @@ fun XhysMiraiBot.sendimg(){
                 }
                 lastMsg.remove(id)
             }
-            (containsAny("三年之期", "龙王")) {
-                id = if (subject is Group) source.targetId else source.fromId
+            (containsAny("三年之期", "龙王")) block@ {
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendKeyWordImage) return@block
+                } else {
+                    id = source.fromId
+                }
                 when((1..2).random()){
                     1->this.javaClass.getResourceAsStream("/隐忍.jpg")!!.sendAsImageTo(subject)
                     else->this.javaClass.getResourceAsStream("/歪嘴.jpg")!!.sendAsImageTo(subject)
@@ -47,25 +57,49 @@ fun XhysMiraiBot.sendimg(){
 
                 lastMsg.remove(id)
             }
-            contains("隐忍"){
-                id = if (subject is Group) source.targetId else source.fromId
+            contains("隐忍") block@ {
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendKeyWordImage) return@block
+                } else {
+                    id = source.fromId
+                }
                 this.javaClass.getResourceAsStream("/隐忍.jpg")!!.sendAsImageTo(subject)
                 lastMsg.remove(id)
             }
-            contains("power"){
+            contains("power") block@ {
                 if((1..10).random() == 1 && !message.toString().contains("小黄勇士power")){
-                    id = if (subject is Group) source.targetId else source.fromId
+                    val id: Long
+                    if (subject is Group) {
+                        id = source.targetId
+                        if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendKeyWordImage) return@block
+                    } else {
+                        id = source.fromId
+                    }
                     this.javaClass.getResourceAsStream("/了不起的猫咪.jpg")!!.sendAsImageTo(subject)
                     lastMsg.remove(id)
                 }
             }
-            contains("小企鹅冲击"){
-                id = if (subject is Group) source.targetId else source.fromId
+            contains("小企鹅冲击") block@ {
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendKeyWordImage) return@block
+                } else {
+                    id = source.fromId
+                }
                 this.javaClass.getResourceAsStream("/小企鹅冲击.jpg")!!.sendAsImageTo(subject)
                 lastMsg.remove(id)
             }
-            contains("笑死"){
-                id = if (subject is Group) source.targetId else source.fromId
+            contains("笑死") block@ {
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendKeyWordImage) return@block
+                } else {
+                    id = source.fromId
+                }
                 this.javaClass.getResourceAsStream("/笑死.png")!!.sendAsImageTo(subject)
                 lastMsg.remove(id)
             }

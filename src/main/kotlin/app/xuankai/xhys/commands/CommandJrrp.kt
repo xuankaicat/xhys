@@ -40,7 +40,7 @@ object CommandJrrp {
         "你还希望听到什么好消息？"
     )
 
-    fun get(msg : MessageEvent, args: List<String> = listOf()) : Message {
+    fun get(msg : MessageEvent, args: List<String>) : Message {
         if(args.isNotEmpty()) return PlainText("jrrp不存在参数！")
         msg.apply {
             val randoms = getRpValue(source.fromId)

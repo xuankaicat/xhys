@@ -10,7 +10,13 @@ fun XhysMiraiBot.atEvent(){
     apply {
         miraiBot.eventChannel.subscribeMessages {
             atBot {
-                id = if (subject is Group) source.targetId else source.fromId
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.responseAtEvent) return@atBot
+                } else {
+                    id = source.fromId
+                }
                 when(message[2].toString().trim()){
                     "小黄勇士power！","小黄勇士power!"-> subject.sendMessage(At(sender as Member) + powerReply(this))
                     "滚","爬","sb","爪巴"->{

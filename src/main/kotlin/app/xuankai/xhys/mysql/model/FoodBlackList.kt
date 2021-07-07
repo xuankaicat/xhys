@@ -1,5 +1,6 @@
 package app.xuankai.xhys.mysql.model
 
+import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
 
 class FoodBlackList : IObjectMysql {
@@ -11,5 +12,10 @@ class FoodBlackList : IObjectMysql {
             "id"->id= value as Int
             "eatStr"->eatStr = value as String
         }
+    }
+
+    companion object {
+        fun getAll() =
+            DataMysql.query<FoodBlackList>("select * from foodblacklist")
     }
 }

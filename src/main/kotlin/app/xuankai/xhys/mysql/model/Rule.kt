@@ -1,19 +1,36 @@
 package app.xuankai.xhys.mysql.model
 
-import kotlin.math.pow
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.PROPERTY)
+annotation class RuleDescription(val description: String)
 
 interface IRuleObject {
     var rule: Long
 }
 
 class Rule {
+    @RuleDescription("响应at事件")
+    var responseAtEvent = true
+    @RuleDescription("响应吃关键字")
+    var responseEatKeyword = true
+    @RuleDescription("发送问号表情")
+    var sendQuestionImage = true
+    @RuleDescription("发送关键词表情")
+    var sendKeyWordImage = true
+
     companion object {
-        private val ruleList = listOf(
-            Rule::responseAtEvent,
-            Rule::responseEatKeyword,
-            Rule::sendQuestionImage,
+        val ruleList = listOf(
+            Rule::responseAtEvent, //1
+            Rule::responseEatKeyword, //2
+            Rule::sendQuestionImage, //4
+            Rule::sendKeyWordImage, //8
         )
 
+        /**
+         * 将Long型的rule解析为规则对象
+         * @receiver IRuleObject
+         * @return Rule
+         */
         fun IRuleObject.parseRule(): Rule {
             val ruleObj = Rule()
             val ruleArray = BooleanArray(ruleList.size) { true } //规则默认为true
@@ -25,16 +42,29 @@ class Rule {
                 tmp /= 2
             }
             //将规则组转换为规则对象
-            for((index, ruleArrayIndex) in (cursor-1).downTo(0).withIndex()) {
+            for((ruleArrayIndex, index) in (cursor-1).downTo(0).withIndex()) {
                 ruleList[index].set(ruleObj, ruleArray[ruleArrayIndex])
             }
             return ruleObj
         }
 
-        fun maxValue() = (2F).pow(ruleList.size).toInt()
+        /**
+         * 返回所有规则都开启的最大值
+         * @return Long
+         */
+        fun maxValue() : Long {
+            val tmp = (1L).shl(ruleList.size - 1)
+            return tmp - 1 + tmp
+        }
     }
 
-    var responseAtEvent = true //响应at事件
-    var responseEatKeyword = true //响应吃关键字
-    var sendQuestionImage = true //发送问号表情
+    fun getValue() : Long {
+        var tmp = 1L
+        var total = 0L
+        ruleList.forEach {
+            if(it.get(this)) total += tmp
+            tmp *= 2
+        }
+        return total
+    }
 }

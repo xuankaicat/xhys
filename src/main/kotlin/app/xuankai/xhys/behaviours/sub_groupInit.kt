@@ -6,11 +6,20 @@ import net.mamoe.mirai.event.events.BotJoinGroupEvent
 
 fun XhysMiraiBot.initExistingGroup(){
     apply {
+        //启动时初始化已有群组
+        groupList = Group.getAll()
+
+        miraiBot.groups.forEach {
+            if(!Group.isGroupExisted(it.id)) {
+                val newGroup = Group.addInitGroup(it.id)
+                groupList.add(newGroup)
+            }
+        }
+
         miraiBot.eventChannel.subscribeAlways<BotJoinGroupEvent> {
-            //检查数据库中是否已经有该群
             if(!Group.isGroupExisted(groupId)) {
-                //没有则初始化群信息
-                Group.addInitGroup(groupId)
+                val newGroup = Group.addInitGroup(groupId)
+                groupList.add(newGroup)
             }
         }
     }

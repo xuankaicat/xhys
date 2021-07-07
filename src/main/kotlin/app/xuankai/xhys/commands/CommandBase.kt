@@ -7,10 +7,10 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m07r1v3
-        |更新卡池（ID91~111）
-        |其中ID为91的物品为收集至少80种物品的额外奖励
-        |R品质的物品可以被制造，每个消耗80个材料
+        |版本号：2021m07r2
+        |更新群规则指令rule
+        |移除私聊复读机功能
+        |升级框架版本
         """.trimMargin())
 
     fun pool() : Message =
@@ -41,6 +41,7 @@ object CommandBase {
         |.disenchant 分解物品
         |.make <物品ID> <数量=1> 制造物品
         |.pshelp 查询付费项目帮助
+        |.rule 设置群规则
         """.trimMargin())
 
     fun psHelp() : Message =

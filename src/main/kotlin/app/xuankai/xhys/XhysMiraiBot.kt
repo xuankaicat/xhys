@@ -1,14 +1,14 @@
 package app.xuankai.xhys
 
+import app.xuankai.xhys.mysql.model.Group
 import net.mamoe.mirai.Bot
 
 object XhysMiraiBot {
-    var id : Long = 0L
-    var repeatValue = 100
     val lastMsg = HashMap<Long, String>()
     var eatTimer = 0
 
     val registeredqqId = ArrayList<Long>()
+    lateinit var groupList : ArrayList<Group>
     var foodBlackList = ArrayList<String>()
 
     lateinit var miraiBot : Bot
