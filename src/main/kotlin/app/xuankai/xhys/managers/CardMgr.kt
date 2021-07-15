@@ -41,9 +41,9 @@ object CardMgr {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
         //ssr UP
-        SPCardPool["ASSR"] = DataMysql.query("select * from cards where id=93 or id=94 or id=96 or id=97")
+        SPCardPool["ASSR"] = DataMysql.query("select * from cards where id=93 or id=112 or id=113")
         //sr UP
-        SPCardPool["ASR"] = DataMysql.query("select * from cards where id=109 or id=110 or id=111")
+        SPCardPool["ASR"] = DataMysql.query("select * from cards where id=114 or id=115")
     }
 
     /**

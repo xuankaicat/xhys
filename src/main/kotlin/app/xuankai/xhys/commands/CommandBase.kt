@@ -7,10 +7,9 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m07r2
-        |更新群规则指令rule
-        |移除私聊复读机功能
-        |升级框架版本
+        |版本号：2021m07r3v2
+        |修复BUG
+        |更新卡池
         """.trimMargin())
 
     fun pool() : Message =
@@ -20,9 +19,9 @@ object CommandBase {
         |默认卡池(78%R,20%SR,1.96%SSR,0.04%UR)
         |.drawcard或.十连
         |活动卡池
-        |抽到SSR时60%是贝母、斯沃激焰剑、幸运的小亚、银翼中的一个
-        |抽到SR时20%是鼠勇士中的一个
-        |.drawcardA或.十连A或.活动十连
+        |抽到SSR时60%是吽、狽音ウルシ中的一个
+        |抽到SR时20%是荆棘之甲、海克斯火箭腰带中的一个
+        |.drawcard A或.十连 A或.活动十连
         """.trimMargin())
 
     fun help() : Message =

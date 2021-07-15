@@ -33,7 +33,7 @@ class Rule {
          */
         fun IRuleObject.parseRule(): Rule {
             val ruleObj = Rule()
-            val ruleArray = BooleanArray(ruleList.size) { true } //规则默认为true
+            val ruleArray = BooleanArray(ruleList.size) { false } //规则默认为false
             //除二取余得到布尔型规则组
             var tmp = rule
             var cursor = 0

@@ -36,7 +36,13 @@ object Eat {
                     }
                 }
                 contains("吃") {
-                    val id = if (subject is Group) source.targetId else source.fromId
+                    val id: Long
+                    if (subject is Group) {
+                        id = source.targetId
+                        if(!groupList.first{it.groupId == source.targetId}.ruleObj.responseEatKeyword) return@contains
+                    } else {
+                        id = source.fromId
+                    }
                     if (!message[1].toString().startsWith("吃")) {
                         when((1..5).random()){
                             1->this.javaClass.getResourceAsStream("/吃啥呢.jpg")!!.sendAsImageTo(subject)
