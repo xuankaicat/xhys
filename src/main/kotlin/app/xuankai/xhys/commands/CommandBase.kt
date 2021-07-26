@@ -7,16 +7,16 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m07r3v2
-        |修复BUG
-        |更新卡池
+        |版本号：2021m08r1
+        |1.更新卡池
+        |2.可以使用3000个材料制作任意UR
         """.trimMargin())
 
     fun pool() : Message =
         PlainText("""
         |每次十连会消耗100枚硬币
         |目前可以抽取的卡池如下：
-        |默认卡池(78%R,20%SR,1.96%SSR,0.04%UR)
+        |默认卡池(77%R,20%SR,2.94%SSR,0.06%UR)
         |.drawcard或.十连
         |活动卡池
         |抽到SSR时60%是吽、狽音ウルシ中的一个

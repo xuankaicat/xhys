@@ -42,8 +42,11 @@ class Rule {
                 tmp /= 2
             }
             //将规则组转换为规则对象
-            for((ruleArrayIndex, index) in (cursor-1).downTo(0).withIndex()) {
-                ruleList[index].set(ruleObj, ruleArray[ruleArrayIndex])
+//            for((ruleArrayIndex, index) in (cursor-1).downTo(0).withIndex()) {
+//                ruleList[index].set(ruleObj, ruleArray[ruleArrayIndex])
+//            }
+            for(index in ruleList.indices) {
+                ruleList[index].set(ruleObj, ruleArray[index])
             }
             return ruleObj
         }

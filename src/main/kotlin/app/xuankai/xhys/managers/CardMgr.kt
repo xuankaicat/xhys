@@ -52,7 +52,7 @@ object CardMgr {
      */
     private fun getRandomCard(pool: String?): Cards =
         when((1..100).random()) {
-            in 24..100 -> getRandomR()
+            in 24..99 -> getRandomR()
             in 3..23 -> {
                 if(pool == null){
                     getRandomSR()

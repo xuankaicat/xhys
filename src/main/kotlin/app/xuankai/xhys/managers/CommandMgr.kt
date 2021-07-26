@@ -399,7 +399,18 @@ object CommandMgr {
                     }
                 }
             }
-            UR -> return PlainText("$name,UR品质的物品不能被制作！")
+            UR -> {
+                metaCost = amount * 3000
+                if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个UR制造需要3000个材料！")
+
+                for (i in 0..amount) {
+                    if((1..4).random() == 1) {
+                        val rdCard = CardMgr.getRandomSSR()
+                        byCard.add(rdCard)
+                        CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                    }
+                }
+            }
             null -> return PlainText("$name,我根本不知道你在说什么！")
         }
         CardBackpack.userGetNewCard(result.qqId, card.id, amount)
