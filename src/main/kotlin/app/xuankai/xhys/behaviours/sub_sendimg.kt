@@ -21,7 +21,7 @@ fun XhysMiraiBot.sendimg(){
                     this.javaClass.getResourceAsStream("/wenhao/不许问号.jpg")!!.sendAsImageTo(subject)
                 }else{
                     if((1..4).random() != 1){
-                        val dir = when((1..14).random()){
+                        val dir = when((1..15).random()){
                             1->"/wenhao/wenhao1.jpg"
                             2->"/wenhao/wenhao2.png"
                             3->"/wenhao/wenhao3.gif"
@@ -35,6 +35,7 @@ fun XhysMiraiBot.sendimg(){
                             11->"/wenhao/wenhao11.jpg"
                             12->"/wenhao/wenhao12.jpg"
                             13->"/wenhao/wenhao13.png"
+                            14->"/wenhao/wenhao14.jpg"
                             else->"/wenhao/不许问号.jpg"
                         }
                         this.javaClass.getResourceAsStream(dir)!!.sendAsImageTo(subject)
