@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "app.xuankai"
-version = "2021m8r1"
+version = "2021m8r2"
 
 repositories {
     //maven {setUrl("http://maven.aliyun.com/nexus/content/groups/public/")}
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    val miraiVersion = "2.7-M2"
+    val miraiVersion = "2.7-RC"
 
     // 开发时使用 mirai-core-api，运行时提供 mirai-core
     api("net.mamoe", "mirai-core-api", miraiVersion)
