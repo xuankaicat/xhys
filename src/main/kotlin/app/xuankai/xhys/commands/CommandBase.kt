@@ -7,9 +7,8 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m08r2
-        |1.更新卡池
-        |2.升级框架版本
+        |版本号：2021m09r1
+        |更新卡池
         """.trimMargin())
 
     fun pool() : Message =
@@ -19,8 +18,8 @@ object CommandBase {
         |默认卡池(77%R,20%SR,2.94%SSR,0.06%UR)
         |.drawcard或.十连
         |活动卡池
-        |抽到SSR时60%是倾寒不是居、无语中的一个
-        |抽到SR时20%是兽人
+        |抽到SSR时60%是艺术勇士、寒冰射手、坦克勇士中的一个
+        |抽到SR时20%是鼠勇士
         |.drawcard A或.十连 A或.活动十连
         """.trimMargin())
 
