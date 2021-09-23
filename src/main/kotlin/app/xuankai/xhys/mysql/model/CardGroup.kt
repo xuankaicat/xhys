@@ -15,6 +15,6 @@ class CardGroup : IObjectMysql {
     }
 
     companion object {
-        fun getAll(): List<CardGroup> = DataMysql.query("select * from cardgroup")
+        fun all(): List<CardGroup> = DataMysql.query("select * from cardgroup")
     }
 }

@@ -1,7 +1,7 @@
 package app.xuankai.xhys.managers
 
 import app.xuankai.xhys.mysql.model.CardBackpack
-import app.xuankai.xhys.mysql.model.Cards
+import app.xuankai.xhys.mysql.model.Card
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.enums.CardRarity.*
@@ -19,12 +19,12 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 object CardMgr {
-    private val cardList: ArrayList<Cards> = DataMysql.query("select * from cards")
+    private val cardList: ArrayList<Card> = Card.all()
     private val RCardPool = cardList.filter { it.rarity == R && it.inPool }
     private val SRCardPool = cardList.filter { it.rarity == SR && it.inPool }
     private val SSRCardPool = cardList.filter { it.rarity == SSR && it.inPool }
     private val URCardPool = cardList.filter { it.rarity == UR && it.inPool }
-    private val SPCardPool = HashMap<String, ArrayList<Cards>>()
+    private val SPCardPool = HashMap<String, ArrayList<Card>>()
     val cardPoolList = listOf("A")
 
     private val CardImgPool = HashMap<Int, BufferedImage>()
@@ -41,16 +41,16 @@ object CardMgr {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
         //ssr UP
-        SPCardPool["ASSR"] = DataMysql.query("select * from cards where id=120 or id=145 or id=147")
+        SPCardPool["ASSR"] = Card.where("id=153 or id=154 or id=155 or id=156")
         //sr UP
-        SPCardPool["ASR"] = DataMysql.query("select * from cards where id=148 or id=149 or id=150 or id=109 or id=110 or id=111 or id=84 or id=85")
+        SPCardPool["ASR"] = Card.where("id=157 or id=158 or id=159 or id=160")
     }
 
     /**
      * 返回随机抽到的一张卡
      * @return Cards
      */
-    private fun getRandomCard(pool: String?): Cards =
+    private fun getRandomCard(pool: String?): Card =
         when((1..100).random()) {
             in 24..99 -> getRandomR()
             in 3..23 -> {
@@ -77,14 +77,14 @@ object CardMgr {
             }
         }
 
-    fun getRandomR(): Cards = RCardPool.random()
-    fun getRandomSR(): Cards = SRCardPool.random()
-    fun getRandomSPSR(pool: String): Cards = SPCardPool[pool+"SR"]?.random() ?: SRCardPool.random()
-    fun getRandomSPSSR(pool: String): Cards {
+    fun getRandomR(): Card = RCardPool.random()
+    fun getRandomSR(): Card = SRCardPool.random()
+    fun getRandomSPSR(pool: String): Card = SPCardPool[pool+"SR"]?.random() ?: SRCardPool.random()
+    fun getRandomSPSSR(pool: String): Card {
         if((1..50).random() == 1) return URCardPool.random()
         return SPCardPool[pool+"SSR"]?.random() ?: SSRCardPool.random()
     }
-    fun getRandomSSR(): Cards {
+    fun getRandomSSR(): Card {
         if((1..50).random() == 1) return URCardPool.random()
         return SSRCardPool.random()
     }
@@ -248,7 +248,7 @@ object CardMgr {
      * @param x Int
      * @param y Int
      */
-    private fun Graphics2D.drawCardName(card: Cards, x: Int, y:Int) {
+    private fun Graphics2D.drawCardName(card: Card, x: Int, y:Int) {
         if(card.rarity == UR) {
             var charX = x
             for(char in card.name) {
@@ -268,7 +268,7 @@ object CardMgr {
      * @param card Cards
      * @return Boolean
      */
-    private fun getCardEvent(qqId : Long, card : Cards): Boolean {
+    private fun getCardEvent(qqId : Long, card : Card): Boolean {
         //增加卡牌总计数
         card.addExistingAmount()
         //增加玩家背包内道具

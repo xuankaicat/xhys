@@ -1,7 +1,7 @@
 package app.xuankai.xhys
 
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.model.Users
+import app.xuankai.xhys.mysql.model.User
 
 /**
  * 用户交易操作的类
@@ -18,7 +18,7 @@ object Vault {
      */
     fun userSendCoin(qqId: Long, orderQQId: Long, amount: Long): Boolean {
         //判断orderQQId用户是否存在
-        if(!Users.isUserExist(orderQQId)) return false
+        if(!User.exist(orderQQId)) return false
         if(!subBaseCoin(qqId, amount)) return false
         addCoin(orderQQId, amount)
         return true
@@ -31,10 +31,10 @@ object Vault {
      * @return Boolean
      */
     fun subCoin(qqId : Long, cost : Long): Boolean {
-        val result : ArrayList<Users> = DataMysql.query("select money,usedMoney from users where qqId=${qqId}")
-        val money = result[0].money!! - result[0].usedMoney
+        val result : ArrayList<User> = DataMysql.query("select money,usedMoney from user where qqId=${qqId}")
+        val money = result[0].money - result[0].usedMoney
         if(money < cost) return false
-        DataMysql.executeSql("update users set usedMoney=usedMoney+${cost} where qqId=${qqId}")
+        DataMysql.executeSql("update user set usedMoney=usedMoney+${cost} where qqId=${qqId}")
         return true
     }
 
@@ -45,10 +45,10 @@ object Vault {
      * @return Boolean
      */
     fun subBaseCoin(qqId: Long, cost: Long): Boolean {
-        val result = DataMysql.query<Users>("select money,usedMoney from users where qqId=${qqId}")
-        val money = result[0].money!! - result[0].usedMoney
+        val result = DataMysql.query<User>("select money,usedMoney from user where qqId=${qqId}")
+        val money = result[0].money - result[0].usedMoney
         if(money < cost) return false
-        DataMysql.executeSql("update users set money=money-${cost} where qqId=${qqId}")
+        DataMysql.executeSql("update user set money=money-${cost} where qqId=${qqId}")
         return true
     }
 
@@ -58,7 +58,7 @@ object Vault {
      * @param value Long
      */
     fun addCoin(qqId: Long, value:Long) {
-        DataMysql.executeSql("update users set money=money+${value} where qqId=${qqId}")
+        DataMysql.executeSql("update user set money=money+${value} where qqId=${qqId}")
     }
 
     /**
@@ -67,7 +67,7 @@ object Vault {
      * @param value Long
      */
     fun subUsedCoin(qqId: Long, value: Long) {
-        DataMysql.executeSql("update users set usedMoney=usedMoney-${value} where qqId=${qqId}")
+        DataMysql.executeSql("update user set usedMoney=usedMoney-${value} where qqId=${qqId}")
     }
 
     /**
@@ -76,7 +76,7 @@ object Vault {
      * @param value Long
      */
     fun addMaterial(qqId: Long, value: Long) {
-        DataMysql.executeSql("update users set material=material+${value} where qqId=${qqId}")
+        DataMysql.executeSql("update user set material=material+${value} where qqId=${qqId}")
     }
 
     /**
@@ -85,6 +85,6 @@ object Vault {
      * @param value Long
      */
     fun subMaterial(qqId: Long, value: Long) {
-        DataMysql.executeSql("update users set material=material-${value} where qqId=${qqId}")
+        DataMysql.executeSql("update user set material=material-${value} where qqId=${qqId}")
     }
 }

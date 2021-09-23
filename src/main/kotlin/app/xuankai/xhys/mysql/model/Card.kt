@@ -4,7 +4,7 @@ import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.IObjectMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 
-open class Cards : IObjectMysql {
+open class Card : IObjectMysql {
     var id : Int = 0
     var name : String = ""
     var rarity : CardRarity = CardRarity.R
@@ -26,14 +26,18 @@ open class Cards : IObjectMysql {
     }
 
     fun addExistingAmount(){
-        DataMysql.executeSql("update cards set existingAmount = existingAmount+1 where id=${id}")
+        DataMysql.executeSql("update card set existingAmount = existingAmount+1 where id=${id}")
     }
 
     companion object {
-        fun findById(id : Int) = DataMysql.query<Cards>("select * from cards where id=${id}").firstOrNull()
+        fun all() = DataMysql.query<Card>("select * from card")
 
-        fun getIdListByRarity(rarity: CardRarity): List<Int> {
-            return DataMysql.query<Cards>("select id from cards where rarity='${rarity.name}'").map { it.id }
+        fun where(str: String) = DataMysql.query<Card>("select * from card where ${str}")
+
+        fun find(id : Int) = DataMysql.query<Card>("select * from card where id=${id}").firstOrNull()
+
+        fun rarityIdList(rarity: CardRarity): List<Int> {
+            return DataMysql.query<Card>("select id from card where rarity='${rarity.name}'").map { it.id }
         }
     }
 }

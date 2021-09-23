@@ -1,10 +1,8 @@
 package app.xuankai.xhys.mysql
 
 import java.sql.Connection
-import java.sql.DriverManager
 import java.sql.ResultSet
 import java.sql.Statement
-import java.util.*
 import kotlin.collections.ArrayList
 
 object DataMysql {

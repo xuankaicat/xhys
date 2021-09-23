@@ -4,9 +4,7 @@ import app.xuankai.xhys.behaviours.*
 import app.xuankai.xhys.managers.CommandMgr.initCommandSystem
 import app.xuankai.xhys.behaviours.Eat.eat
 import app.xuankai.xhys.behaviours.Repeat.repeat
-import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.model.FoodBlackList
-import app.xuankai.xhys.mysql.model.Group
+import app.xuankai.xhys.mysql.model.BlackFood
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.utils.BotConfiguration
@@ -26,7 +24,7 @@ suspend fun main(args: Array<String>) {
             protocol = BotConfiguration.MiraiProtocol.ANDROID_PHONE // 切换协议
         }.alsoLogin()
 
-        foodBlackList = FoodBlackList.getAll().map { it.eatStr } as ArrayList<String>
+        foodBlackList = BlackFood.all().map { it.eatStr } as ArrayList<String>
 
         initExistingUsers()//初始化新用户
         initExistingGroup()//初始化群组

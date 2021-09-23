@@ -40,7 +40,7 @@ open class CardBackpack : IObjectMysql {
                     "where qqId = $orderQQId and cardId = $cardId")
             if(toAmount == null){
                 //如果列表中不存在则判断用户是否存在
-                if(!Users.isUserExist(orderQQId)) return false
+                if(!User.exist(orderQQId)) return false
 
                 DataMysql.executeSql("insert into cardbackpack(qqId, cardId, amount) " +
                         "values ($orderQQId, $cardId, $amount)")
@@ -103,7 +103,7 @@ open class CardBackpack : IObjectMysql {
             val cardArray = DataMysql.query<CardBackpack>(sqlStr)
             val result = ArrayList<UserCardBackpackItem>()
             cardArray.forEach {
-                val card = DataMysql.query<Cards>("select * from cards where id=${it.cardId}")[0]
+                val card = DataMysql.query<Card>("select * from cards where id=${it.cardId}")[0]
                 result.add(UserCardBackpackItem(card, it.amount))
             }
             return result
@@ -116,7 +116,7 @@ open class CardBackpack : IObjectMysql {
          * @return Long
          */
         fun userGetBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity): Long {
-            val idStr = Cards.getIdListByRarity(rarity).joinToString()
+            val idStr = Card.rarityIdList(rarity).joinToString()
 
             return DataMysql.getValue<BigDecimal>("select sum(amount) from cardbackpack" +
                     " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
@@ -150,7 +150,7 @@ open class CardBackpack : IObjectMysql {
          * @return Long
          */
         fun userClearBackpackRepeatItemAmount(qqId: Long, rarity: CardRarity): Long {
-            val idStr = Cards.getIdListByRarity(rarity).joinToString()
+            val idStr = Card.rarityIdList(rarity).joinToString()
             val cardAmount = DataMysql.getValue<BigDecimal>("select sum(amount) from cardbackpack" +
                     " where qqId = $qqId and amount > 1 and cardId in ($idStr)")?.toLong() ?: 0
 

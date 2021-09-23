@@ -9,9 +9,9 @@ import app.xuankai.xhys.commands.CommandRule
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity.*
 import app.xuankai.xhys.mysql.model.CardBackpack
-import app.xuankai.xhys.mysql.model.Cards
-import app.xuankai.xhys.mysql.model.FoodBlackList
-import app.xuankai.xhys.mysql.model.Users
+import app.xuankai.xhys.mysql.model.Card
+import app.xuankai.xhys.mysql.model.BlackFood
+import app.xuankai.xhys.mysql.model.User
 import app.xuankai.xhys.utils.CommandUtils
 import app.xuankai.xhys.utils.format
 import app.xuankai.xhys.utils.toInputStream
@@ -71,7 +71,7 @@ object CommandMgr {
     private fun commandUpdateVersionControl(msg : MessageEvent, args: List<String>) : Message {
         if(args.isNotEmpty()) return PlainText("")
         if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
-        val qqIdList = DataMysql.query<Users>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= 80")
+        val qqIdList = DataMysql.query<User>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= 80")
         val stringBuilder = StringBuilder("insert into cardbackpack(qqId, cardId, amount) values")
         var first = true
         for(id in qqIdList.map { it.qqId }) {
@@ -171,67 +171,71 @@ object CommandMgr {
 
     private fun commandMoney(msg : MessageEvent, args: List<String> = listOf()) : Message {
         if(args.isNotEmpty()) return PlainText("参数不正确，应该使用.money！")
-        val result = Users.findByQQId(msg.source.fromId)
-        val money = result.money!! - result.usedMoney
+        val result = User.find(msg.source.fromId)
+        val money = result.money - result.usedMoney
         val name = result.nick ?: msg.senderName
         return PlainText("${name},你一共获得过${result.money}枚硬币，还存着${money}枚可以用!")
     }
 
     private fun commandAtetext(msg : MessageEvent, args: List<String>) : Message {
-        val result = Users.findByQQId(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String? = if(args.isEmpty()) null else args.joinToString()
 
         if(value == null){
-            DataMysql.executeSql("update users set beAteText=null where qqId=${result.qqId}")
+            user.beAteText = null
+            user.update()
             return PlainText("${name},你成功花费10枚硬币取消了被吃文字功能！")
         }
-        DataMysql.executeSql("update users set beAteText='${value}' where qqId=${result.qqId}")
+        user.beAteText = value
+        user.update()
         return PlainText("${name},你成功花费10枚硬币把被吃文字改成了${value}")
     }
 
     private fun commandNn(msg : MessageEvent, args: List<String>) : Message {
-        val result = Users.findByQQId(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String? = if(args.isEmpty()) null else args.joinToString("")
 
         if(value == null){
-            DataMysql.executeSql("update users set nick=null where qqId=${result.qqId}")
+            user.nick = null
+            user.update()
             return PlainText("${name},你成功花费10枚硬币取消了昵称！")
         }
-        DataMysql.executeSql("update users set nick='${value}' where qqId=${result.qqId}")
+        user.nick = value
+        user.update()
         return PlainText("${name},你成功花费10枚硬币把昵称改成了${value}！")
     }
 
     private fun commandBlackfood(msg : MessageEvent, args: List<String>) : Message {
-        val result = Users.findByQQId(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String = (if(args.isEmpty()) null else args.joinToString(""))
             ?: return PlainText("所以小黄勇士应该把什么加入食物黑名单呢？")
-        val fresult = DataMysql.query<FoodBlackList>("select * from foodblacklist where eatStr='${value}'")
+        val fresult = BlackFood.where("eatStr='${value}'")
         if(fresult.isNotEmpty()){
-            Vault.addCoin(result.qqId, 10)
+            Vault.addCoin(user.qqId, 10)
             return PlainText("食物黑名单上已经有${value}了！")
         }
-        DataMysql.executeSql("insert into foodblacklist(eatStr) values('${value}')")
+        BlackFood.insert(value)
         XhysMiraiBot.foodBlackList.add(value)
         return PlainText("${name},你成功花费10枚硬币把${value}添加到了食物黑名单！")
     }
 
     private fun commandUnblackfood(msg : MessageEvent, args: List<String>) : Message {
-        val result = Users.findByQQId(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(!Vault.subCoin(result.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String = (if(args.isEmpty()) null else args.joinToString(""))
             ?: return PlainText("所以小黄勇士应该把什么从食物黑名单上划掉呢？")
-        val fresult = DataMysql.query<FoodBlackList>("select * from foodblacklist where eatStr='${value}'")
+        val fresult = BlackFood.where("eatStr='${value}'")
         if(fresult.isEmpty()){
             return PlainText("小黄勇士没有在食物黑名单上找到${value}，但是硬币还是收走了！")
         }
-        DataMysql.executeSql("delete from foodblacklist where eatStr='${value}'")
+        BlackFood.delete(value)
         XhysMiraiBot.foodBlackList.remove(value)
         return PlainText("${name},你成功花费10枚硬币把${value}从食物黑名单去掉了！")
     }
@@ -239,10 +243,10 @@ object CommandMgr {
     private suspend fun commandDrawCard(msg : MessageEvent, args: List<String>) : Message {
         val pool = if(args.isEmpty()) null else args[0]
         if(pool != null && pool !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
-        val result = Users.findByQQId(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(!Vault.subCoin(result.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
-        val stream = CardMgr.getTenCards(name, result.qqId, msg.source.sender.avatarUrl, pool).toInputStream()
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(!Vault.subCoin(user.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
+        val stream = CardMgr.getTenCards(name, user.qqId, msg.source.sender.avatarUrl, pool).toInputStream()
         return messageChainOf(PlainText("${name},你成功花费100枚硬币在${pool ?: "默认"}卡池进行了一次十连！"),
             stream.uploadAsImage(msg.subject))
     }
@@ -254,7 +258,7 @@ object CommandMgr {
 
     private suspend fun commandBackpack(msg : MessageEvent, args: List<String>) : Message {
         if(args.size > 1) return PlainText("参数不正确，应该使用.backpack <page>！")
-        val result = Users.findByQQId(msg.source.fromId)
+        val result = User.find(msg.source.fromId)
         val name = result.nick ?: msg.senderName
 
         val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
@@ -267,7 +271,7 @@ object CommandMgr {
 
     private suspend fun commandItem(msg : MessageEvent, args: List<String>) : Message {
         if(args.size > 1) return PlainText("参数不正确，应该使用.item <page>！")
-        val result = Users.findByQQId(msg.source.fromId)
+        val result = User.find(msg.source.fromId)
         val name = result.nick ?: msg.senderName
 
         val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
@@ -280,27 +284,27 @@ object CommandMgr {
 
     private fun commandPay(msg : MessageEvent, args: List<String>) : Message {
         if(args.size != 2) return PlainText("参数不对喔，先写要付给谁再写要付多少枚硬币！中间用空格分开！")
-        val result = Users.findByQQId(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(!Vault.userSendCoin(result.qqId, args[0].toLong(), args[1].toLong())) return PlainText.format(Vault.canNotEffortText, name)
-        if(args[0].toLong() == result.qqId) return PlainText("${name},你成功把${args[1]}枚硬币从左手放到了右手！")
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(!Vault.userSendCoin(user.qqId, args[0].toLong(), args[1].toLong())) return PlainText.format(Vault.canNotEffortText, name)
+        if(args[0].toLong() == user.qqId) return PlainText("${name},你成功把${args[1]}枚硬币从左手放到了右手！")
         return PlainText("${name},你成功支付给${args[0]} ${args[1]}枚硬币！")
     }
 
     private fun commandSend(msg : MessageEvent, args: List<String>) : Message {
         if(args.size != 2 && args.size != 3) return PlainText("参数不对喔，先写要付给谁再写卡牌的ID再写数量！中间用空格分开！")
-        val result = Users.findByQQId(msg.source.fromId)
+        val result = User.find(msg.source.fromId)
         val name = result.nick ?: msg.senderName
         if(args[0].toLong() == result.qqId) return PlainText("${name},你自己操作吧XD")
         val amount = if(args.size == 2) 1 else args[2].toInt()
         val cardId = args[1].toInt()
         if(!CardBackpack.userSendCard(result.qqId, args[0].toLong(), cardId, amount)) return PlainText("发送失败了，请检查参数！")
-        val cardName = Cards.findById(cardId)?.name ?: return PlainText("ID为$cardId 的物品不存在！")
+        val cardName = Card.find(cardId)?.name ?: return PlainText("ID为$cardId 的物品不存在！")
         return PlainText("${name},你成功把 $amount 个 $cardName 交给了${args[0]}!")
     }
 
     private fun commandDisenchant(msg : MessageEvent, args: List<String>) : Message {
-        val result = Users.findByQQId(msg.source.fromId)
+        val result = User.find(msg.source.fromId)
         val name = result.nick ?: msg.senderName
         if(args.isEmpty()) {
             //获取分解列表的情况
@@ -333,7 +337,7 @@ object CommandMgr {
                 val amount = if(args.size >= 3) args[2].toInt() else 1
                 if(amount == 0) return PlainText("好，分解结束（？）")
 
-                val card = Cards.findById(args[1].toInt()) ?: return PlainText("这根本不是个东西！")
+                val card = Card.find(args[1].toInt()) ?: return PlainText("这根本不是个东西！")
                 if(card.rarity != SSR) {
                     return PlainText("$name, ${card.name}根本不是SSR！不能通过这个方法制作！")
                 }
@@ -355,17 +359,17 @@ object CommandMgr {
 
     private fun commandMake(msg : MessageEvent, args: List<String>) : Message {
         if(args.size != 1 && args.size != 2) return PlainText("参数不对喔，应该使用.make <Id> <数量>！")
-        val result = Users.findByQQId(msg.source.fromId)
+        val result = User.find(msg.source.fromId)
         val name = result.nick ?: msg.senderName
         val cardId = args[0].toInt()
-        val card = Cards.findById(cardId)
+        val card = Card.find(cardId)
         val amount = if (args.size == 2) args[1].toLong() else 1
         val metaCost: Long
-        val byCard = ArrayList<Cards>()
+        val byCard = ArrayList<Card>()
         when (card?.rarity) {
             R -> {
                 metaCost = amount * 80
-                if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个R制造需要80个材料！")
+                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个R制造需要80个材料！")
 
                 for (i in 0 until amount) {
                     if((1..10).random() == 1) {
@@ -377,7 +381,7 @@ object CommandMgr {
             }
             SR -> {
                 metaCost = amount * 100
-                if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SR制造需要100个材料！")
+                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SR制造需要100个材料！")
 
                 for (i in 0 until amount) {
                     if((1..10).random() == 1) {
@@ -389,7 +393,7 @@ object CommandMgr {
             }
             SSR -> {
                 metaCost = amount * 300
-                if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SSR制造需要300个材料！")
+                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SSR制造需要300个材料！")
 
                 for (i in 0..amount) {
                     if((1..10).random() == 1) {
@@ -401,7 +405,7 @@ object CommandMgr {
             }
             UR -> {
                 metaCost = amount * 3000
-                if(Users.findByQQId(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个UR制造需要3000个材料！")
+                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个UR制造需要3000个材料！")
 
                 for (i in 0..amount) {
                     if((1..4).random() == 1) {

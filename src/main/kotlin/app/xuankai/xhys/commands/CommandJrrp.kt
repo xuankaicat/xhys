@@ -1,14 +1,6 @@
 package app.xuankai.xhys.commands
 
-import app.xuankai.xhys.Vault
-import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.model.Users
-import app.xuankai.xhys.utils.MyUserInfo.Companion.getMyUserInfo
-import io.ktor.util.date.*
-import javafx.application.Application.launch
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import app.xuankai.xhys.mysql.model.User
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.events.MessageEvent
@@ -66,9 +58,9 @@ object CommandJrrp {
                     else -> extraStringList.random()
                 }
             }
-            val result = DataMysql.query<Users>("select * from users where qqId=${source.fromId}")
-            val name = if(result[0].nick == null)
-                (if (subject is Group) (sender as Member).nameCard else sender.nick) else result[0].nick
+            val user = User.find(source.fromId)
+            val name = if(user.nick == null)
+                (if (subject is Group) (sender as Member).nameCard else sender.nick) else user.nick
             return PlainText("${name},你今天的人品值是${randoms}。${extraString}")
         }
     }
@@ -86,17 +78,17 @@ object CommandJrrp {
 
     private fun addJrrpMoney(qqId : Long, rpvalue : Int){
         val today : LocalDate = LocalDate.now()
-        val result = DataMysql.query<Users>("select * from users where qqId=${qqId}")
-        if(today != result[0].lastjrrp){
-            val addmoney = when (rpvalue) {
+        val user = User.find(qqId)
+        if(today != user.lastjrrp){
+            user.money += when (rpvalue) {
                 1 -> 100
                 in 2..10 -> rpvalue * 5
                 in 90..100 -> rpvalue * 2
                 else -> rpvalue
             }
-            DataMysql.executeSql("update users set lastjrrp='${today}' where qqId=${qqId}")
-            Vault.addCoin(qqId, addmoney.toLong())
-            Vault.subUsedCoin(qqId, 100)
+            user.lastjrrp = today
+            user.usedMoney -= 100
+            user.update()
         }
     }
 }

@@ -2,7 +2,7 @@ package app.xuankai.xhys.behaviours
 
 import app.xuankai.xhys.XhysMiraiBot
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.model.Users
+import app.xuankai.xhys.mysql.model.User
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
@@ -93,7 +93,7 @@ object Eat {
                 return String.format(blackFoodStringList.random(), eaten)
             }
 
-            val result = DataMysql.query<Users>("select * from users where beAteText is not null")
+            val result = User.where("beAteText is not null")
             result.forEach {
                 if(it.displayName == eaten){
                     return it.beAteText!!

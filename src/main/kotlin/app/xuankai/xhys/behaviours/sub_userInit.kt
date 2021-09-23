@@ -3,7 +3,7 @@ package app.xuankai.xhys.behaviours
 import app.xuankai.xhys.XhysMiraiBot
 import net.mamoe.mirai.event.subscribeMessages
 import app.xuankai.xhys.mysql.DataMysql
-import app.xuankai.xhys.mysql.model.Users
+import app.xuankai.xhys.mysql.model.User
 import net.mamoe.mirai.event.EventPriority
 
 fun XhysMiraiBot.initExistingUsers(){
@@ -12,11 +12,9 @@ fun XhysMiraiBot.initExistingUsers(){
             (startsWith(".") or startsWith("。")) {
                 val qqId = source.fromId
                 if(!registeredqqId.contains(qqId)){
-                    val result = DataMysql.query<Users>("select * from users where qqId=${qqId}")
-                    if(result.isEmpty()){
-                        DataMysql.executeSql("insert into users(qqId, money) values(${qqId}, 0)")
-                    }
-                    registeredqqId.add((qqId))
+                    if(!User.exist(qqId))
+                        User.insert(qqId)
+                    registeredqqId.add(qqId)
                 }
             }
         }

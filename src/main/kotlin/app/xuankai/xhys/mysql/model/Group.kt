@@ -37,18 +37,18 @@ class Group : IObjectMysql, IRuleObject {
     }
 
     companion object {
-        fun getAll() =
-            DataMysql.query<Group>("select * from `group`")
-
-        fun isGroupExisted(groupId: Long) =
-            DataMysql.getValue<Long>("select count(*) from `group` where `groupId`=$groupId") != 0L
-
-        fun addInitGroup(groupId: Long) : Group {
+        fun insert(groupId: Long) : Group {
             val newGroup = Group(groupId)
             DataMysql.executeSql("insert into `group`(`groupId`,`repeat`,`rule`) " +
                     "values($groupId,100,${newGroup.rule})")
             return newGroup
         }
+
+        fun all() =
+            DataMysql.query<Group>("select * from `group`")
+
+        fun exist(groupId: Long) =
+            DataMysql.getValue<Long>("select count(*) from `group` where `groupId`=$groupId") != 0L
 
         fun updateRepeat(groupId: Long, repeat: Int) =
             DataMysql.executeSql("update `group` set `repeat`=$repeat where `groupId`=$groupId")
