@@ -51,7 +51,9 @@ object CommandMgr {
             register(Repeat::commandRp, "rp")
             register(::commandMoney, "money", "coin")
             register(::commandDrawCard, "drawcard", "十连")
+            register(::commandSoHa, "sohacard", "梭哈")
             register(::commandActivityDrawCard, "活动十连")
+            register(::commandActivitySoHa, "活动梭哈")
             register(::commandBackpack, "bag","backpack", "背包")
             register(::commandItem, "item", "物品")
             register(::commandAtetext, "atetext")
@@ -251,18 +253,34 @@ object CommandMgr {
             stream.uploadAsImage(msg.subject))
     }
 
+    private suspend fun commandSoHa(msg : MessageEvent, args: List<String>) : Message {
+        val pool = if(args.isEmpty()) null else args[0]
+        if(pool != null && pool !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
+        if(user.money - user.usedMoney < 100) return PlainText.format(Vault.canNotEffortText, name)
+        val stream = CardMgr.getPokerCards(name, user, msg.source.sender.avatarUrl, pool).toInputStream()
+        return messageChainOf(PlainText("${name},你成功在${pool ?: "默认"}卡池进行了一次梭哈！"),
+            stream.uploadAsImage(msg.subject))
+    }
+
     private suspend fun commandActivityDrawCard(msg : MessageEvent, args: List<String>) : Message {
         if(args.isNotEmpty()) return PlainText("")
         return commandDrawCard(msg, listOf("A"))
     }
 
+    private suspend fun commandActivitySoHa(msg : MessageEvent, args: List<String>) : Message {
+        if(args.isNotEmpty()) return PlainText("")
+        return commandSoHa(msg, listOf("A"))
+    }
+
     private suspend fun commandBackpack(msg : MessageEvent, args: List<String>) : Message {
         if(args.size > 1) return PlainText("参数不正确，应该使用.backpack <page>！")
-        val result = User.find(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
 
         val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
-        val imgResult = CardMgr.getBackpack(name, result.qqId, msg.source.sender.avatarUrl, page)
+        val imgResult = CardMgr.getBackpack(name, user.qqId, msg.source.sender.avatarUrl, page)
             ?: return PlainText("${name},你根本没有这么多东西！")
         val stream = imgResult.toInputStream()
         return messageChainOf(PlainText("${name},你的背包第 $page 页是"),
@@ -271,11 +289,11 @@ object CommandMgr {
 
     private suspend fun commandItem(msg : MessageEvent, args: List<String>) : Message {
         if(args.size > 1) return PlainText("参数不正确，应该使用.item <page>！")
-        val result = User.find(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
+        val user = User.find(msg.source.fromId)
+        val name = user.nick ?: msg.senderName
 
         val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
-        val imgResult = CardMgr.getBackpack(name, result.qqId, msg.source.sender.avatarUrl, page, false)
+        val imgResult = CardMgr.getBackpack(name, user.qqId, msg.source.sender.avatarUrl, page, false)
             ?: return PlainText("${name},你根本没有这么多东西！")
         val stream = imgResult.toInputStream()
         return messageChainOf(PlainText("${name},你的物品第 $page 页是"),

@@ -94,7 +94,7 @@ open class CardBackpack : IObjectMysql {
          * @return ArrayList<UserCardBackpackItem>
          */
         fun userGetBackpackItems(qqId: Long, startIndex: Int, indexAmount: Int, sort: Boolean): ArrayList<UserCardBackpackItem> {
-            var sqlStr = "select a.cardId,a.amount from cardbackpack a join cards b on a.cardId = b.id" +
+            var sqlStr = "select a.cardId,a.amount from cardbackpack a join card b on a.cardId = b.id" +
                     " where qqId = $qqId"
             if(sort) {
                 sqlStr += " order by b.rarity desc,id"
@@ -103,7 +103,7 @@ open class CardBackpack : IObjectMysql {
             val cardArray = DataMysql.query<CardBackpack>(sqlStr)
             val result = ArrayList<UserCardBackpackItem>()
             cardArray.forEach {
-                val card = DataMysql.query<Card>("select * from cards where id=${it.cardId}")[0]
+                val card = Card.where("id=${it.cardId}")[0]
                 result.add(UserCardBackpackItem(card, it.amount))
             }
             return result

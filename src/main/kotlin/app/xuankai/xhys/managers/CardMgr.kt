@@ -1,11 +1,16 @@
 package app.xuankai.xhys.managers
 
+import app.xuankai.xhys.Vault
+import app.xuankai.xhys.managers.CardMgr.drawAvatar
 import app.xuankai.xhys.mysql.model.CardBackpack
 import app.xuankai.xhys.mysql.model.Card
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.enums.CardRarity.*
+import app.xuankai.xhys.mysql.model.User
+import com.sun.javafx.iio.ImageStorage
 import java.awt.Color
+import java.awt.Font
 import java.awt.FontMetrics
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
@@ -48,7 +53,7 @@ object CardMgr {
 
     /**
      * 返回随机抽到的一张卡
-     * @return Cards
+     * @return Card
      */
     private fun getRandomCard(pool: String?): Card =
         when((1..100).random()) {
@@ -214,6 +219,134 @@ object CardMgr {
     }
 
     /**
+     * 处理用户的梭哈十连抽，返回生成的图像
+     * @param name String
+     * @param user User
+     * @param avatarUrl String
+     * @return BufferedImage
+     */
+    fun getPokerCards(name : String, user: User, avatarUrl : String, pool: String? = null): BufferedImage {
+        val image = BufferedImage(640, 480, background.type)
+        val g2d = image.createGraphics()
+        g2d.drawImage(background, 0, 0, null)
+        val fm: FontMetrics = g2d.fontMetrics
+        //画图
+        var silverTimes = 0
+
+        val list = ArrayList<Card>(10)
+        val newList = ArrayList<Card>(3)
+        var srCount = 0
+        var rCount = 0
+        var ssrFlag = false
+        var totalCoin = 0
+        var newSr = false
+        var newR = false
+        while(Vault.subCoin(user.qqId, 100)){
+            totalCoin += 100
+            for (i in 0 until 10) {
+                var card = getRandomCard(pool)
+                when(card.rarity){
+                    R -> {
+                        silverTimes++
+                        if(silverTimes != 10) {
+                            rCount++
+                        } else {
+                            card = SRCardPool.random()
+                            srCount++
+                        }
+                        if(getCardEvent(user.qqId, card)) newR = true
+                    }
+                    SR -> {
+                        srCount++
+                        if(getCardEvent(user.qqId, card)) newSr = true
+                    }
+                    else -> {
+                        ssrFlag = true
+
+                        if(getCardEvent(user.qqId, card)) {
+                            newList.add(card)
+                        } else {
+                            list.add(card)
+                        }
+                    }
+                }
+            }
+
+            if(ssrFlag) break
+        }
+
+        var overFlag = false
+        for (y in 120..280 step 160){
+            for(x in 60..500 step 110){
+                var card : Card? = null
+                val icon : BufferedImage
+                val cardImg : BufferedImage?
+                var newFlag = false
+                if(newList.isNotEmpty()) {
+                    card = newList.last()
+                    newFlag = true
+                    icon = when(card.rarity){
+                        UR -> blueCover
+                        SSR-> colorCover
+                        else-> silverCover
+                    }
+                    cardImg = CardImgPool[card.id]
+                    newList.removeLast()
+                } else if(list.isNotEmpty()) {
+                    card = list.last()
+                    icon = when(card.rarity){
+                        UR -> blueCover
+                        SSR-> colorCover
+                        else-> silverCover
+                    }
+                    cardImg = CardImgPool[card.id]
+                    list.removeLast()
+                } else if (srCount != 0) {
+                    newFlag = newSr
+                    icon = yellowCover
+                    cardImg = BufferedImage(icon.width, icon.height, icon.type)
+                    g2d.color = getCardFontColor(SR)
+                    val str = srCount.toString()
+                    srCount = 0
+                    val strX = x + (80 - fm.stringWidth(str)) / 2
+                    g2d.drawString(str, strX, y + 50)
+                } else if (rCount != 0) {
+                    newFlag = newR
+                    icon = silverCover
+                    cardImg = BufferedImage(icon.width, icon.height, icon.type)
+                    g2d.color = getCardFontColor(R)
+                    val str = rCount.toString()
+                    rCount = 0
+                    val strX = x + (80 - fm.stringWidth(str)) / 2
+                    g2d.drawString(str, strX, y + 50)
+                } else {
+                    overFlag = true
+                    break
+                }
+                //背景方块
+                g2d.drawImage(icon, x, y, icon.width, icon.height, null)
+                //实际内容
+                g2d.drawImage(cardImg, x, y, icon.width, icon.height, null)
+                if(card != null) {
+                    val strX = x + (80 - fm.stringWidth(card.name)) / 2
+                    g2d.drawCardName(card, strX, y + 100)
+                }
+                if(newFlag){
+                    //首次获得显示new标识
+                    g2d.color = Color.red
+                    g2d.drawString("new!", x + 70, y + 90)
+                }
+            }
+            if(overFlag) break
+        }
+        g2d.drawAvatar(name, avatarUrl)
+        g2d.color = Color.red
+        g2d.drawString("硬币花费总计：${totalCoin}", 63, 68)
+        g2d.dispose()
+        return image
+    }
+
+    /**
      * 在图片左上角绘制头像、昵称和时间
      * @receiver Graphics2D
      * @param name String
@@ -244,7 +377,7 @@ object CardMgr {
     /**
      * 绘制卡牌名称，绘制结束后不会把画笔颜色还原
      * @receiver Graphics2D
-     * @param card Cards 要绘制的卡牌
+     * @param card Card 要绘制的卡牌
      * @param x Int
      * @param y Int
      */
@@ -265,7 +398,7 @@ object CardMgr {
     /**
      * 用户抽到卡牌之后的处理，返回是否第一次获得该卡牌
      * @param qqId Long
-     * @param card Cards
+     * @param card Card
      * @return Boolean
      */
     private fun getCardEvent(qqId : Long, card : Card): Boolean {

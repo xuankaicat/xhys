@@ -7,8 +7,10 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m09r3
-        |修复bug
+        |版本号：2021m09r5
+        |增加.sohacard与.活动梭哈
+        |更新卡池
+        |增加潜在的bug
         """.trimMargin())
 
     fun pool() : Message =
@@ -52,7 +54,9 @@ object CommandBase {
         |.unblackfood <str> 将食物从黑名单移除
         |【100枚硬币可以】
         |.drawcard 十连抽卡
-        |.活动十连 活动期间十连抽活动卡池
+        |.活动十连 十连抽活动卡池
+        |.sohacard 梭哈
+        |.活动梭哈 梭哈活动卡池
         """.trimMargin())
 
     fun dice(): Message = Dice.random()
