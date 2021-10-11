@@ -42,14 +42,14 @@ object CardMgr {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
 
-        PoolInit()
+        poolInit()
         //ssr UP
         //SPCardPool["ASSR"] = Card.where("id=163 or id=164 or id=165")
         //sr UP
         //SPCardPool["ASR"] = Card.where("id=148 or id=149 or id=150 or id=173 or id=174")
     }
 
-    private fun PoolInit() {
+    fun poolInit() {
         val cardPools = CardPool.all()
         cardPoolList = cardPools.map { it.pool }.distinct()
 
@@ -166,7 +166,7 @@ object CardMgr {
         for(y in 80..440 step 40){
             for(x in 5..640 step 160){
                 val card = items[index].card
-                g2d.color = getCardFontColor(card.rarity)
+                g2d.color = card.rarity.fontColor()
                 g2d.drawImage(backpackCover, x - 4, y - 4, 163, 40, null)
                 g2d.drawImage(CardImgPool[card.id], x, y, 32, 32, null)
                 g2d.drawCardName(card, x + 40, y + 28)
@@ -219,20 +219,11 @@ object CardMgr {
         for (y in 120..280 step 160){
             for(x in 60..500 step 110){
                 var card = getRandomCard(pool)
-                val icon = when(card.rarity){
-                    R -> {
-                        silverTimes++
-                        if(silverTimes != 10) {
-                            silverCover
-                        } else {
-                            card = SRCardPool.random()
-                            yellowCover
-                        }
-                    }
-                    SR -> yellowCover
-                    UR -> blueCover
-                    else-> colorCover
+                if(card.rarity == R) silverTimes++
+                if(silverTimes == 10) {
+                    card = SRCardPool.random()
                 }
+                val icon = card.rarity.icon()
                 //背景方块
                 g2d.drawImage(icon, x, y, icon.width, icon.height, null)
                 //实际内容
@@ -265,9 +256,8 @@ object CardMgr {
         val g2d = image.createGraphics()
         g2d.drawImage(background, 0, 0, null)
         val fm: FontMetrics = g2d.fontMetrics
-        //画图
-        var silverTimes = 0
 
+        var silverTimes = 0
         val list = ArrayList<Card>(10)
         val newList = ArrayList<Card>(3)
         var srCount = 0
@@ -293,7 +283,10 @@ object CardMgr {
                     }
                     SR -> {
                         srCount++
-                        if(getCardEvent(user.qqId, card)) newSr = true
+                        if(getCardEvent(user.qqId, card)) {
+                            newList.add(card)
+                            newSr = true
+                        }
                     }
                     else -> {
                         ssrFlag = true
@@ -310,6 +303,9 @@ object CardMgr {
             if(ssrFlag) break
         }
 
+        newList.sortBy { it.rarity }
+
+        //画图
         var overFlag = false
         for (y in 120..280 step 160){
             for(x in 60..500 step 110){
@@ -317,30 +313,29 @@ object CardMgr {
                 val icon : BufferedImage
                 val cardImg : BufferedImage?
                 var newFlag = false
-                if(newList.isNotEmpty()) {
+                if((y != 280 || x <390) && newList.isNotEmpty() && newList.last().rarity == SSR) {
                     card = newList.last()
                     newFlag = true
-                    icon = when(card.rarity){
-                        UR -> blueCover
-                        SSR-> colorCover
-                        else-> silverCover
-                    }
+                    icon = card.rarity.icon()
                     cardImg = CardImgPool[card.id]
                     newList.removeLast()
-                } else if(list.isNotEmpty()) {
+                } else if((y != 280 || x <390) && list.isNotEmpty()) {
                     card = list.last()
-                    icon = when(card.rarity){
-                        UR -> blueCover
-                        SSR-> colorCover
-                        else-> silverCover
-                    }
+                    icon = card.rarity.icon()
                     cardImg = CardImgPool[card.id]
                     list.removeLast()
+                } else if((y != 280 || x <390) && newList.isNotEmpty()) {
+                    card = newList.last()
+                    newFlag = true
+                    icon = card.rarity.icon()
+                    srCount--
+                    cardImg = CardImgPool[card.id]
+                    newList.removeLast()
                 } else if (srCount != 0) {
-                    newFlag = newSr
+                    newFlag = newSr && newList.any()
                     icon = yellowCover
                     cardImg = BufferedImage(icon.width, icon.height, icon.type)
-                    g2d.color = getCardFontColor(SR)
+                    g2d.color = SR.fontColor()
                     val str = srCount.toString()
                     srCount = 0
                     val strX = x + (80 - fm.stringWidth(str)) / 2
@@ -349,15 +344,25 @@ object CardMgr {
                     newFlag = newR
                     icon = silverCover
                     cardImg = BufferedImage(icon.width, icon.height, icon.type)
-                    g2d.color = getCardFontColor(R)
+                    g2d.color = R.fontColor()
                     val str = rCount.toString()
                     rCount = 0
                     val strX = x + (80 - fm.stringWidth(str)) / 2
                     g2d.drawString(str, strX, y + 50)
                 } else {
-                    overFlag = true
-                    break
+                    if(newList.any()) {
+                        card = newList.last()
+                        newFlag = true
+                        icon = card.rarity.icon()
+                        srCount--
+                        cardImg = CardImgPool[card.id]
+                        newList.removeLast()
+                    } else {
+                        overFlag = true
+                        break
+                    }
                 }
+
                 //背景方块
                 g2d.drawImage(icon, x, y, icon.width, icon.height, null)
                 //实际内容
@@ -381,20 +386,14 @@ object CardMgr {
         return image
     }
 
-    /**
-     * 在图片左上角绘制头像、昵称和时间
-     * @receiver Graphics2D
-     * @param name String
-     * @param avatarUrl String
-     */
-    private fun Graphics2D.drawAvatar(name : String, avatarUrl : String){
-        this.color = Color.BLACK
-        val avatar = ImageIO.read(URL(avatarUrl))
-        this.drawImage(avatar, 10, 10, 48, 48, null)
-        this.drawString("$name ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())}", 63, 53)
+    private fun CardRarity.icon() = when(this){
+        UR -> blueCover
+        SSR-> colorCover
+        SR -> yellowCover
+        else-> silverCover
     }
 
-    private fun getCardFontColor(rarity: CardRarity): Color = when(rarity){
+    private fun CardRarity.fontColor() = when(this){
         R -> Color.BLUE
         SR -> Color(255, 0, 255)
         SSR -> Color(255, 155, 0)
@@ -410,6 +409,19 @@ object CardMgr {
     }
 
     /**
+     * 在图片左上角绘制头像、昵称和时间
+     * @receiver Graphics2D
+     * @param name String
+     * @param avatarUrl String
+     */
+    private fun Graphics2D.drawAvatar(name : String, avatarUrl : String){
+        this.color = Color.BLACK
+        val avatar = ImageIO.read(URL(avatarUrl))
+        this.drawImage(avatar, 10, 10, 48, 48, null)
+        this.drawString("$name ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())}", 63, 53)
+    }
+
+    /**
      * 绘制卡牌名称，绘制结束后不会把画笔颜色还原
      * @receiver Graphics2D
      * @param card Card 要绘制的卡牌
@@ -420,12 +432,12 @@ object CardMgr {
         if(card.rarity == UR) {
             var charX = x
             for(char in card.name) {
-                this.color = getCardFontColor(UR)
+                this.color = UR.fontColor()
                 this.drawString(char.toString(), charX, y)
                 charX += this.fontMetrics.charWidth(char)
             }
         } else {
-            this.color = getCardFontColor(card.rarity)
+            this.color = card.rarity.fontColor()
             this.drawString(card.name, x, y)
         }
     }

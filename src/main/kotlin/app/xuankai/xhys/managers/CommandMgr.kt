@@ -8,9 +8,9 @@ import app.xuankai.xhys.commands.CommandJrrp
 import app.xuankai.xhys.commands.CommandRule
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity.*
-import app.xuankai.xhys.mysql.model.CardBackpack
-import app.xuankai.xhys.mysql.model.Card
 import app.xuankai.xhys.mysql.model.BlackFood
+import app.xuankai.xhys.mysql.model.Card
+import app.xuankai.xhys.mysql.model.CardBackpack
 import app.xuankai.xhys.mysql.model.User
 import app.xuankai.xhys.utils.CommandUtils
 import app.xuankai.xhys.utils.format
@@ -23,11 +23,8 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.lang.StringBuilder
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.reflect.KSuspendFunction2
 
 object CommandMgr {
@@ -67,6 +64,7 @@ object CommandMgr {
             register(CommandRule::get, "rule")
 
             register(::commandUpdateVersionControl, "uvc")
+            register(::commandUpdateCardPool, "ucp")
         }
     }
 
@@ -82,6 +80,13 @@ object CommandMgr {
         }
         DataMysql.executeSql(stringBuilder.toString())
         return PlainText("升级成功，语句为$stringBuilder")
+    }
+
+    private fun commandUpdateCardPool(msg : MessageEvent, args: List<String>) : Message {
+        if(args.isNotEmpty()) return PlainText("")
+        if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
+        CardMgr.poolInit()
+        return PlainText("卡池更新成功！")
     }
 
     private fun HashMap<String, () -> Message>.register(

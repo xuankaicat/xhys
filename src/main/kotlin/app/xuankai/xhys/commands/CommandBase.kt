@@ -8,8 +8,8 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m10r1
-        |更新卡池
+        |版本号：2021m10r2
+        |优化梭哈的显示
         |增加潜在的bug
         """.trimMargin())
 
