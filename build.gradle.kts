@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "app.xuankai"
-version = "2021m9r5"
+version = "2021m10r1"
 
 repositories {
     //maven {setUrl("http://maven.aliyun.com/nexus/content/groups/public/")}
@@ -27,7 +27,7 @@ dependencies {
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion)
 
     //mysql
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.5.4")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.5.5")
     implementation("mysql:mysql-connector-java:8.0.25")
 }
 

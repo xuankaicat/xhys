@@ -46,9 +46,9 @@ object CardMgr {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
         //ssr UP
-        SPCardPool["ASSR"] = Card.where("id=153 or id=154 or id=155 or id=156")
+        SPCardPool["ASSR"] = Card.where("id=163 or id=164 or id=165")
         //sr UP
-        SPCardPool["ASR"] = Card.where("id=157 or id=158 or id=159 or id=160")
+        SPCardPool["ASR"] = Card.where("id=148 or id=149 or id=150 or id=173 or id=174")
     }
 
     /**

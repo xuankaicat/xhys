@@ -7,8 +7,7 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m09r5
-        |增加.sohacard与.活动梭哈
+        |版本号：2021m10r1
         |更新卡池
         |增加潜在的bug
         """.trimMargin())
@@ -20,8 +19,8 @@ object CommandBase {
         |默认卡池(77%R,20%SR,2.94%SSR,0.06%UR)
         |.drawcard或.十连
         |活动卡池
-        |抽到SSR时60%是猎食者、方阵刹那、无邪、阿尔马达中的一个
-        |抽到SR时20%是2星角色单手剑专武
+        |抽到SSR时60%是千雷弓、沙兰加神弓、圣母颂中的一个
+        |抽到SR时20%是最近出的5款鼠勇士
         |.drawcard A或.十连 A或.活动十连
         """.trimMargin())
 
