@@ -1,5 +1,6 @@
 package app.xuankai.xhys.commands
 
+import app.xuankai.xhys.managers.CardMgr
 import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
@@ -18,11 +19,7 @@ object CommandBase {
         |目前可以抽取的卡池如下：
         |默认卡池(77%R,20%SR,2.94%SSR,0.06%UR)
         |.drawcard或.十连
-        |活动卡池
-        |抽到SSR时60%是千雷弓、沙兰加神弓、圣母颂中的一个
-        |抽到SR时20%是最近出的5款鼠勇士
-        |.drawcard A或.十连 A或.活动十连
-        """.trimMargin())
+        """.trimMargin().plus("\n${CardMgr.cardPoolText}"))
 
     fun help() : Message =
         PlainText("""

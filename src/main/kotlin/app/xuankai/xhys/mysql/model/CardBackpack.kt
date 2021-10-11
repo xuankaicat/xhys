@@ -21,7 +21,7 @@ open class CardBackpack : IObjectMysql {
         }
     }
 
-    companion object{
+    companion object {
         /**
          * qqId的用户将amount个cardId物品交给orderQQId，返回给予是否成功
          * @param qqId Long
@@ -94,6 +94,7 @@ open class CardBackpack : IObjectMysql {
          * @return ArrayList<UserCardBackpackItem>
          */
         fun userGetBackpackItems(qqId: Long, startIndex: Int, indexAmount: Int, sort: Boolean): ArrayList<UserCardBackpackItem> {
+            val cards = Card.all()
             var sqlStr = "select a.cardId,a.amount from cardbackpack a join card b on a.cardId = b.id" +
                     " where qqId = $qqId"
             if(sort) {
@@ -103,7 +104,7 @@ open class CardBackpack : IObjectMysql {
             val cardArray = DataMysql.query<CardBackpack>(sqlStr)
             val result = ArrayList<UserCardBackpackItem>()
             cardArray.forEach {
-                val card = Card.where("id=${it.cardId}")[0]
+                val card = cards.find { c -> c.id == it.cardId }!!
                 result.add(UserCardBackpackItem(card, it.amount))
             }
             return result

@@ -244,7 +244,7 @@ object CommandMgr {
 
     private suspend fun commandDrawCard(msg : MessageEvent, args: List<String>) : Message {
         val pool = if(args.isEmpty()) null else args[0]
-        if(pool != null && pool !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
+        if(pool != null && pool[0] !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
         val user = User.find(msg.source.fromId)
         val name = user.nick ?: msg.senderName
         if(!Vault.subCoin(user.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
@@ -255,7 +255,7 @@ object CommandMgr {
 
     private suspend fun commandSoHa(msg : MessageEvent, args: List<String>) : Message {
         val pool = if(args.isEmpty()) null else args[0]
-        if(pool != null && pool !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
+        if(pool != null && pool[0] !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
         val user = User.find(msg.source.fromId)
         val name = user.nick ?: msg.senderName
         if(user.money - user.usedMoney < 100) return PlainText.format(Vault.canNotEffortText, name)

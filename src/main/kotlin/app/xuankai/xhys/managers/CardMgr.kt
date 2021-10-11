@@ -1,27 +1,22 @@
 package app.xuankai.xhys.managers
 
 import app.xuankai.xhys.Vault
-import app.xuankai.xhys.managers.CardMgr.drawAvatar
-import app.xuankai.xhys.mysql.model.CardBackpack
-import app.xuankai.xhys.mysql.model.Card
-import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity
 import app.xuankai.xhys.mysql.enums.CardRarity.*
+import app.xuankai.xhys.mysql.model.Card
+import app.xuankai.xhys.mysql.model.CardBackpack
+import app.xuankai.xhys.mysql.model.CardPool
 import app.xuankai.xhys.mysql.model.User
-import com.sun.javafx.iio.ImageStorage
 import java.awt.Color
-import java.awt.Font
 import java.awt.FontMetrics
 import java.awt.Graphics2D
 import java.awt.image.BufferedImage
-import java.io.*
-import java.lang.StringBuilder
+import java.io.File
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.imageio.ImageIO
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 object CardMgr {
     private val cardList: ArrayList<Card> = Card.all()
@@ -30,7 +25,8 @@ object CardMgr {
     private val SSRCardPool = cardList.filter { it.rarity == SSR && it.inPool }
     private val URCardPool = cardList.filter { it.rarity == UR && it.inPool }
     private val SPCardPool = HashMap<String, ArrayList<Card>>()
-    val cardPoolList = listOf("A")
+    lateinit var cardPoolList : List<Char>
+    lateinit var cardPoolText : String
 
     private val CardImgPool = HashMap<Int, BufferedImage>()
 
@@ -45,10 +41,60 @@ object CardMgr {
         cardList.forEach {
             CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
         }
+
+        PoolInit()
         //ssr UP
-        SPCardPool["ASSR"] = Card.where("id=163 or id=164 or id=165")
+        //SPCardPool["ASSR"] = Card.where("id=163 or id=164 or id=165")
         //sr UP
-        SPCardPool["ASR"] = Card.where("id=148 or id=149 or id=150 or id=173 or id=174")
+        //SPCardPool["ASR"] = Card.where("id=148 or id=149 or id=150 or id=173 or id=174")
+    }
+
+    private fun PoolInit() {
+        val cardPools = CardPool.all()
+        cardPoolList = cardPools.map { it.pool }.distinct()
+
+        SPCardPool.clear()
+        val sb = StringBuilder()
+
+        cardPoolList.forEach {
+            sb.appendLine("卡池${it}")
+            val ssrSb = StringBuilder("抽到SSR时60%是")
+            var ssrFlag = false
+            val srSb = StringBuilder("抽到SR时20%是")
+            var srFlag = false
+
+            val tmpSSR = ArrayList<Card>()
+            val tmpSR = ArrayList<Card>()
+            val ids = cardPools.filter { c -> c.pool == it }.map { c -> c.cardId }
+            cardList.forEach { card ->
+                if(ids.contains(card.id)) {
+                    if(card.rarity == SSR) {
+                        tmpSSR.add(card)
+                        if(ssrFlag) ssrSb.append(',') else ssrFlag = true
+                        ssrSb.append(card.name)
+                    } else {
+                        tmpSR.add(card)
+                        if(srFlag) srSb.append(',') else srFlag = true
+                        srSb.append(card.name)
+                    }
+                }
+            }
+
+            ssrSb.append("中的一个")
+            srSb.append("中的一个")
+
+            sb.appendLine(ssrSb)
+            sb.appendLine(srSb)
+            sb.append(".drawcard ${it}或.十连 ${it}")
+            if(it == 'A')
+                sb.appendLine("或.活动十连")
+            else
+                sb.append('\n')
+
+            SPCardPool["${it}SSR"] = tmpSSR
+            SPCardPool["${it}SR"] = tmpSR
+        }
+        cardPoolText = sb.toString().trim('\n')
     }
 
     /**
@@ -82,9 +128,9 @@ object CardMgr {
             }
         }
 
-    fun getRandomR(): Card = RCardPool.random()
-    fun getRandomSR(): Card = SRCardPool.random()
-    fun getRandomSPSR(pool: String): Card = SPCardPool[pool+"SR"]?.random() ?: SRCardPool.random()
+    fun getRandomR() = RCardPool.random()
+    fun getRandomSR() = SRCardPool.random()
+    fun getRandomSPSR(pool: String) = SPCardPool[pool+"SR"]?.random() ?: SRCardPool.random()
     fun getRandomSPSSR(pool: String): Card {
         if((1..50).random() == 1) return URCardPool.random()
         return SPCardPool[pool+"SSR"]?.random() ?: SSRCardPool.random()
@@ -93,17 +139,6 @@ object CardMgr {
         if((1..50).random() == 1) return URCardPool.random()
         return SSRCardPool.random()
     }
-
-//    fun getPictorialBook(name : String, qqId: Long, avatarUrl : String, page: Int): BufferedImage? {
-//        val pageStart = 4 * (page - 1)
-//        val groups = CardGroup.getAll().subList(pageStart, pageStart + 4)
-//        val regex = Regex("(?=|${groups.joinToString("|") { it.name }})")
-//        cardList.forEach {
-//            if(it.group.contains(regex)) {
-//
-//            }
-//        }
-//    }
 
     private const val onePageAmount = 40
     /**
