@@ -43,10 +43,6 @@ object CardMgr {
         }
 
         poolInit()
-        //ssr UP
-        //SPCardPool["ASSR"] = Card.where("id=163 or id=164 or id=165")
-        //sr UP
-        //SPCardPool["ASR"] = Card.where("id=148 or id=149 or id=150 or id=173 or id=174")
     }
 
     fun poolInit() {
@@ -85,7 +81,7 @@ object CardMgr {
 
             sb.appendLine(ssrSb)
             sb.appendLine(srSb)
-            sb.append(".drawcard ${it}或.十连 ${it}")
+            sb.append(".drawcard ${it}或.十连 $it")
             if(it == 'A')
                 sb.appendLine("或.活动十连")
             else

@@ -5,6 +5,9 @@ import app.xuankai.xhys.managers.CommandMgr.initCommandSystem
 import app.xuankai.xhys.behaviours.Eat.eat
 import app.xuankai.xhys.behaviours.Repeat.repeat
 import app.xuankai.xhys.mysql.model.BlackFood
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.utils.BotConfiguration
