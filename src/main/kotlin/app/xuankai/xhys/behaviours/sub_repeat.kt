@@ -1,6 +1,7 @@
 package app.xuankai.xhys.behaviours
 
 import app.xuankai.xhys.XhysMiraiBot
+import app.xuankai.xhys.managers.CommandMgr
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -27,7 +28,9 @@ object Repeat {
     }
 
     /**调整复读功率*/
-    fun commandRp(msg : MessageEvent, args: List<String>) : Message {
+    fun commandRp() : Message {
+        val msg = CommandMgr.msg
+        val args = CommandMgr.args
         if(msg.subject !is Group) return PlainText("目前只支持设置群聊复读功率！请在你的群中使用rp指令")
         if(args.size != 1) return PlainText("参数不正确，应该使用.rp <value>！")
         msg.apply {

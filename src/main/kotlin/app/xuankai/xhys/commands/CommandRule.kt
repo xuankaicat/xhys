@@ -1,6 +1,7 @@
 package app.xuankai.xhys.commands
 
 import app.xuankai.xhys.XhysMiraiBot
+import app.xuankai.xhys.managers.CommandMgr
 import app.xuankai.xhys.mysql.model.Rule
 import app.xuankai.xhys.mysql.model.RuleDescription
 import net.mamoe.mirai.contact.Group
@@ -23,7 +24,9 @@ object CommandRule {
         return PlainText(builder.toString())
     }
 
-    fun get(msg : MessageEvent, args: List<String>) : Message {
+    fun get() : Message {
+        val msg = CommandMgr.msg
+        val args = CommandMgr.args
         //无参数或参数为?则显示规则帮助
         if(args.isEmpty() || args[0] == "?" || args[0] == "？") return getHelpMessage()
         if(msg.subject !is Group) return PlainText("目前只支持设置群聊规则！请在你的群中使用rule指令")

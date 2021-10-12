@@ -25,14 +25,23 @@ import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.reflect.KFunction0
+import kotlin.reflect.KSuspendFunction0
 import kotlin.reflect.KSuspendFunction2
 
 object CommandMgr {
     private var cmdStrPattern = ""
     //不需要任何参数的指令
-    private val baseCmd = HashMap<String, () -> Message>()
+    private val baseCmd = HashMap<String, KFunction0<Message>>()
     //需要当前环境信息的指令，形如 (MessageEvent, List<String>) -> Message
     private val cmd = HashMap<String, Any>()
+
+    lateinit var msg: MessageEvent
+    lateinit var args: List<String>
+    lateinit var user: User
+    val name: String
+        get() = user.nick ?: msg.senderName
+
 
     init {
         baseCmd.apply {
@@ -60,6 +69,9 @@ object CommandMgr {
             register(::commandPay, "pay")
             register(::commandSend, "send")
             register(::commandDisenchant, "disenchant", "分解", "材料")
+            register(::commandDisenchantR, "disenchantr", "分解r")
+            register(::commandDisenchantSR, "disenchantsr", "分解sr")
+            register(::commandDisenchantSSR, "disenchantssr", "分解ssr")
             register(::commandMake, "make", "制造", "合成")
             register(CommandRule::get, "rule")
 
@@ -68,7 +80,7 @@ object CommandMgr {
         }
     }
 
-    private fun commandUpdateVersionControl(msg : MessageEvent, args: List<String>) : Message {
+    private fun commandUpdateVersionControl() : Message {
         if(args.isNotEmpty()) return PlainText("")
         if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
         val qqIdList = DataMysql.query<User>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= 80")
@@ -82,15 +94,25 @@ object CommandMgr {
         return PlainText("升级成功，语句为$stringBuilder")
     }
 
-    private fun commandUpdateCardPool(msg : MessageEvent, args: List<String>) : Message {
+    private fun commandUpdateCardPool() : Message {
         if(args.isNotEmpty()) return PlainText("")
         if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
         CardMgr.poolInit()
         return PlainText("卡池更新成功！")
     }
 
-    private fun HashMap<String, () -> Message>.register(
-        f: () -> Message,
+//    private fun HashMap<String, () -> Message>.register(
+//        f: () -> Message,
+//        vararg cmdNames: String) {
+//
+//        for (name in cmdNames) {
+//            this[name] = f
+//            cmdStrPattern += "|${name}"
+//        }
+//    }
+
+    private fun HashMap<String, Any>.register(
+        f: KFunction0<Message>,
         vararg cmdNames: String) {
 
         for (name in cmdNames) {
@@ -99,8 +121,9 @@ object CommandMgr {
         }
     }
 
-    private fun HashMap<String, Any>.register(
-        f: (MessageEvent, List<String>) -> Message,
+    @JvmName("registerStringMessage")
+    private fun HashMap<String, KFunction0<Message>>.register(
+        f: KFunction0<Message>,
         vararg cmdNames: String) {
 
         for (name in cmdNames) {
@@ -109,8 +132,19 @@ object CommandMgr {
         }
     }
 
+//    private fun HashMap<String, Any>.register(
+//        f: () -> Message,
+//        vararg cmdNames: String) {
+//
+//        for (name in cmdNames) {
+//            this[name] = f
+//            cmdStrPattern += "|${name}"
+//        }
+//    }
+
+    @JvmName("registerStringAny")
     private fun HashMap<String, Any>.register(
-        f: KSuspendFunction2<MessageEvent, List<String>, Message>,
+        f: KSuspendFunction0<Message>,
         vararg cmdNames: String
     ) {
         for (name in cmdNames) {
@@ -125,11 +159,10 @@ object CommandMgr {
         return cmd[cmdText] ?: baseCmd[cmdText]
     }
 
-    private suspend fun getCmdFunResult(f: Any?, args: List<String>, messageEvent: MessageEvent): Message {
+    private suspend fun getCmdFunResult(f: Any?): Message {
         @Suppress("UNCHECKED_CAST")
-        return (f as? (MessageEvent, List<String>) -> Message)?.invoke(messageEvent, args)
-            ?: (f as? () -> Message)?.let { it() }
-            ?: (f as? KSuspendFunction2<MessageEvent, List<String>, Message>)?.invoke(messageEvent, args)
+        return (f as? () -> Message)?.let { it() }
+            ?: (f as? KSuspendFunction0<Message>)?.invoke()
             ?: PlainText("")
     }
 
@@ -138,7 +171,8 @@ object CommandMgr {
         return if (matcher.find()) {
             //解析指令参数
             val params = matcher.group("params")
-            val args = params?.trim()?.split(' ')?.toList()?.filter { it.trim() != "" } ?: listOf()
+            msg = messageEvent
+            args = params?.trim()?.split(' ')?.toList()?.filter { it.trim() != "" } ?: listOf()
             //运行指令函数
             val cmdText = matcher.group("name").lowercase(Locale.getDefault())
             val c = cmd[cmdText]
@@ -150,17 +184,22 @@ object CommandMgr {
                 val fixedCmdText = CommandUtils.tryCheck(cmdText)
                 return if (fixedCmdText != null) {
                     PlainText("小黄勇士猜你想用的指令是$fixedCmdText,\n")
-                        .plus(getCmdFunResult(tryGetCmdFun(fixedCmdText), args, messageEvent))
+                        .plus(getCmdFunResult(tryGetCmdFun(fixedCmdText)))
                 } else {
                     PlainText("小黄勇士听不懂你的指令！输入.help来看看有什么可以用的！")
                 }
             }
-            getCmdFunResult(c, args, messageEvent)
+            user = User.find(msg.source.fromId)
+            getCmdFunResult(c)
         } else {
             null
         }
     }
 
+    /**
+     * 指令入口
+     * @receiver XhysMiraiBot
+     */
     fun XhysMiraiBot.initCommandSystem(){
         apply {
             miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
@@ -176,17 +215,13 @@ object CommandMgr {
         }
     }
 
-    private fun commandMoney(msg : MessageEvent, args: List<String> = listOf()) : Message {
+    private fun commandMoney() : Message {
         if(args.isNotEmpty()) return PlainText("参数不正确，应该使用.money！")
-        val result = User.find(msg.source.fromId)
-        val money = result.money - result.usedMoney
-        val name = result.nick ?: msg.senderName
-        return PlainText("${name},你一共获得过${result.money}枚硬币，还存着${money}枚可以用!")
+        val money = user.money - user.usedMoney
+        return PlainText("${name},你一共获得过${user.money}枚硬币，还存着${money}枚可以用!")
     }
 
-    private fun commandAtetext(msg : MessageEvent, args: List<String>) : Message {
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+    private fun commandAtetext() : Message {
         if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String? = if(args.isEmpty()) null else args.joinToString()
 
@@ -200,9 +235,7 @@ object CommandMgr {
         return PlainText("${name},你成功花费10枚硬币把被吃文字改成了${value}")
     }
 
-    private fun commandNn(msg : MessageEvent, args: List<String>) : Message {
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+    private fun commandNn() : Message {
         if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String? = if(args.isEmpty()) null else args.joinToString("")
 
@@ -216,9 +249,7 @@ object CommandMgr {
         return PlainText("${name},你成功花费10枚硬币把昵称改成了${value}！")
     }
 
-    private fun commandBlackfood(msg : MessageEvent, args: List<String>) : Message {
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+    private fun commandBlackfood() : Message {
         if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String = (if(args.isEmpty()) null else args.joinToString(""))
             ?: return PlainText("所以小黄勇士应该把什么加入食物黑名单呢？")
@@ -232,9 +263,7 @@ object CommandMgr {
         return PlainText("${name},你成功花费10枚硬币把${value}添加到了食物黑名单！")
     }
 
-    private fun commandUnblackfood(msg : MessageEvent, args: List<String>) : Message {
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+    private fun commandUnblackfood() : Message {
         if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText, name)
         val value : String = (if(args.isEmpty()) null else args.joinToString(""))
             ?: return PlainText("所以小黄勇士应该把什么从食物黑名单上划掉呢？")
@@ -247,42 +276,40 @@ object CommandMgr {
         return PlainText("${name},你成功花费10枚硬币把${value}从食物黑名单去掉了！")
     }
 
-    private suspend fun commandDrawCard(msg : MessageEvent, args: List<String>) : Message {
+    private suspend fun commandDrawCard() : Message {
         val pool = if(args.isEmpty()) null else args[0]
         if(pool != null && pool[0] !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+
         if(!Vault.subCoin(user.qqId, 100)) return PlainText.format(Vault.canNotEffortText, name)
         val stream = CardMgr.getTenCards(name, user.qqId, msg.source.sender.avatarUrl, pool).toInputStream()
         return messageChainOf(PlainText("${name},你成功花费100枚硬币在${pool ?: "默认"}卡池进行了一次十连！"),
             stream.uploadAsImage(msg.subject))
     }
 
-    private suspend fun commandSoHa(msg : MessageEvent, args: List<String>) : Message {
+    private suspend fun commandSoHa() : Message {
         val pool = if(args.isEmpty()) null else args[0]
         if(pool != null && pool[0] !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+
         if(user.money - user.usedMoney < 100) return PlainText.format(Vault.canNotEffortText, name)
         val stream = CardMgr.getPokerCards(name, user, msg.source.sender.avatarUrl, pool).toInputStream()
         return messageChainOf(PlainText("${name},你成功在${pool ?: "默认"}卡池进行了一次梭哈！"),
             stream.uploadAsImage(msg.subject))
     }
 
-    private suspend fun commandActivityDrawCard(msg : MessageEvent, args: List<String>) : Message {
+    private suspend fun commandActivityDrawCard() : Message {
         if(args.isNotEmpty()) return PlainText("")
-        return commandDrawCard(msg, listOf("A"))
+        args = listOf("A")
+        return commandDrawCard()
     }
 
-    private suspend fun commandActivitySoHa(msg : MessageEvent, args: List<String>) : Message {
+    private suspend fun commandActivitySoHa() : Message {
         if(args.isNotEmpty()) return PlainText("")
-        return commandSoHa(msg, listOf("A"))
+        args = listOf("A")
+        return commandSoHa()
     }
 
-    private suspend fun commandBackpack(msg : MessageEvent, args: List<String>) : Message {
+    private suspend fun commandBackpack() : Message {
         if(args.size > 1) return PlainText("参数不正确，应该使用.backpack <page>！")
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
 
         val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
         val imgResult = CardMgr.getBackpack(name, user.qqId, msg.source.sender.avatarUrl, page)
@@ -292,10 +319,8 @@ object CommandMgr {
             stream.uploadAsImage(msg.subject))
     }
 
-    private suspend fun commandItem(msg : MessageEvent, args: List<String>) : Message {
+    private suspend fun commandItem() : Message {
         if(args.size > 1) return PlainText("参数不正确，应该使用.item <page>！")
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
 
         val page = if(args.isEmpty()) 1 else args[0].toIntOrNull() ?: return PlainText("奇怪的页数！")
         val imgResult = CardMgr.getBackpack(name, user.qqId, msg.source.sender.avatarUrl, page, false)
@@ -305,43 +330,54 @@ object CommandMgr {
             stream.uploadAsImage(msg.subject))
     }
 
-    private fun commandPay(msg : MessageEvent, args: List<String>) : Message {
+    private fun commandPay() : Message {
         if(args.size != 2) return PlainText("参数不对喔，先写要付给谁再写要付多少枚硬币！中间用空格分开！")
-        val user = User.find(msg.source.fromId)
-        val name = user.nick ?: msg.senderName
+
         if(!Vault.userSendCoin(user.qqId, args[0].toLong(), args[1].toLong())) return PlainText.format(Vault.canNotEffortText, name)
         if(args[0].toLong() == user.qqId) return PlainText("${name},你成功把${args[1]}枚硬币从左手放到了右手！")
         return PlainText("${name},你成功支付给${args[0]} ${args[1]}枚硬币！")
     }
 
-    private fun commandSend(msg : MessageEvent, args: List<String>) : Message {
+    private fun commandSend() : Message {
         if(args.size != 2 && args.size != 3) return PlainText("参数不对喔，先写要付给谁再写卡牌的ID再写数量！中间用空格分开！")
-        val result = User.find(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
-        if(args[0].toLong() == result.qqId) return PlainText("${name},你自己操作吧XD")
+
+        if(args[0].toLong() == user.qqId) return PlainText("${name},你自己操作吧XD")
         val amount = if(args.size == 2) 1 else args[2].toInt()
         val cardId = args[1].toInt()
-        if(!CardBackpack.userSendCard(result.qqId, args[0].toLong(), cardId, amount)) return PlainText("发送失败了，请检查参数！")
+        if(!CardBackpack.userSendCard(user.qqId, args[0].toLong(), cardId, amount)) return PlainText("发送失败了，请检查参数！")
         val cardName = Card.find(cardId)?.name ?: return PlainText("ID为$cardId 的物品不存在！")
         return PlainText("${name},你成功把 $amount 个 $cardName 交给了${args[0]}!")
     }
 
-    private fun commandDisenchant(msg : MessageEvent, args: List<String>) : Message {
-        val result = User.find(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
+    private fun commandDisenchantR() : Message {
+        args = listOf("R")
+        return commandDisenchant()
+    }
+
+    private fun commandDisenchantSR() : Message {
+        args = listOf("SR")
+        return commandDisenchant()
+    }
+
+    private fun commandDisenchantSSR() : Message {
+        args = listOf("SSR").plus(args)
+        return commandDisenchant()
+    }
+
+    private fun commandDisenchant() : Message {
         if(args.isEmpty()) {
             //获取分解列表的情况
-            val rAmount = CardBackpack.userGetBackpackRepeatItemAmount(result.qqId, R)
-            val srAmount = CardBackpack.userGetBackpackRepeatItemAmount(result.qqId, SR)
-            val ssrAmount = CardBackpack.userGetBackpackRepeatItemAmount(result.qqId, SSR)
-            val stringBuilder = StringBuilder("$name,你一共有${result.material}个材料。")
+            val rAmount = CardBackpack.userGetBackpackRepeatItemAmount(user.qqId, R)
+            val srAmount = CardBackpack.userGetBackpackRepeatItemAmount(user.qqId, SR)
+            val ssrAmount = CardBackpack.userGetBackpackRepeatItemAmount(user.qqId, SSR)
+            val stringBuilder = StringBuilder("$name,你一共有${user.material}个材料。")
             stringBuilder.apply {
                 if(rAmount != 0L || srAmount != 0L || ssrAmount != 0L) {
                     appendLine("这些是你的分解结果和方法：")
-                    if(rAmount != 0L) appendLine("一共有 $rAmount 个重复的R品质物品，分解可以得到 $rAmount 个材料(使用.disenchant R分解所有重复R品质物品)")
-                    if(srAmount != 0L) appendLine("一共有 $srAmount 个重复的SR品质物品，分解可以得到 ${srAmount * 5} 个材料(使用.disenchant SR分解所有重复SR品质物品)")
+                    if(rAmount != 0L) appendLine("一共有 $rAmount 个重复的R品质物品，分解可以得到 $rAmount 个材料(使用.disenchantR分解所有重复R品质物品)")
+                    if(srAmount != 0L) appendLine("一共有 $srAmount 个重复的SR品质物品，分解可以得到 ${srAmount * 5} 个材料(使用.disenchantSR分解所有重复SR品质物品)")
                     if(ssrAmount != 0L) {
-                        appendLine("一共有 $ssrAmount 个重复的SSR品质物品(使用.disenchant SSR <ID> <数量=1>分解SSR)")
+                        appendLine("一共有 $ssrAmount 个重复的SSR品质物品(使用.disenchantSSR <ID> <数量=1>分解SSR)")
                     }
                 } else {
                     appendLine("目前没有任何东西可以分解！")
@@ -356,22 +392,25 @@ object CommandMgr {
 
             if(rarity == SSR) {
                 //SSR不能一次全部分解
-                if(args.size < 2) return PlainText("SSR不支持一键分解！请在后面跟上要分解的物品ID！")
-                val amount = if(args.size >= 3) args[2].toInt() else 1
-                if(amount == 0) return PlainText("好，分解结束（？）")
+                if(args.size < 2) return PlainText("分解SSR请在后面跟上要分解的物品ID！如果要全部分解请使用.disenchantSSR all")
+                if(args[1].lowercase(Locale.getDefault()) != "all") {
+                    //指定分解的情况
+                    val amount = if(args.size >= 3) args[2].toInt() else 1
+                    if(amount == 0) return PlainText("好，分解结束（？）")
 
-                val card = Card.find(args[1].toInt()) ?: return PlainText("这根本不是个东西！")
-                if(card.rarity != SSR) {
-                    return PlainText("$name, ${card.name}根本不是SSR！不能通过这个方法制作！")
+                    val card = Card.find(args[1].toInt()) ?: return PlainText("这根本不是个东西！")
+                    if(card.rarity != SSR) {
+                        return PlainText("$name, ${card.name}根本不是SSR！不能通过这个方法制作！")
+                    }
+
+                    val mateAmount = CardBackpack.userDisenchantSSRItem(user.qqId, args[1], amount)
+                        ?: return PlainText("$name,你根本没有${card.name}！")
+                    if(mateAmount == 0L) return PlainText("$name,你没有这么多${card.name}！")
+                    return PlainText("$name,你成功分解了$amount 个${card.name}，获得了${mateAmount} 个材料！")
                 }
-
-                val mateAmount = CardBackpack.userDisenchantSSRItem(result.qqId, args[1], amount)
-                    ?: return PlainText("$name,你根本没有${card.name}！")
-                if(mateAmount == 0L) return PlainText("$name,你没有这么多${card.name}！")
-                return PlainText("$name,你成功分解了$amount 个${card.name}，获得了${mateAmount} 个材料！")
             }
 
-            val mateAmount = CardBackpack.userClearBackpackRepeatItemAmount(result.qqId, rarity)
+            val mateAmount = CardBackpack.userClearBackpackRepeatItemAmount(user.qqId, rarity)
             return if(mateAmount == 0L){
                 PlainText("$name,你根本没有多余的${args[0].uppercase(Locale.getDefault())}品质物品！")
             } else {
@@ -380,10 +419,8 @@ object CommandMgr {
         }
     }
 
-    private fun commandMake(msg : MessageEvent, args: List<String>) : Message {
+    private fun commandMake() : Message {
         if(args.size != 1 && args.size != 2) return PlainText("参数不对喔，应该使用.make <Id> <数量>！")
-        val result = User.find(msg.source.fromId)
-        val name = result.nick ?: msg.senderName
         val cardId = args[0].toInt()
         val card = Card.find(cardId)
         val amount = if (args.size == 2) args[1].toLong() else 1
@@ -392,56 +429,56 @@ object CommandMgr {
         when (card?.rarity) {
             R -> {
                 metaCost = amount * 80
-                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个R制造需要80个材料！")
+                if(User.find(user.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个R制造需要80个材料！")
 
                 for (i in 0 until amount) {
                     if((1..10).random() == 1) {
                         val rdCard = CardMgr.getRandomR()
                         byCard.add(rdCard)
-                        CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                        CardBackpack.userGetNewCard(user.qqId, rdCard.id)
                     }
                 }
             }
             SR -> {
                 metaCost = amount * 100
-                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SR制造需要100个材料！")
+                if(User.find(user.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SR制造需要100个材料！")
 
                 for (i in 0 until amount) {
                     if((1..10).random() == 1) {
                         val rdCard = CardMgr.getRandomSR()
                         byCard.add(rdCard)
-                        CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                        CardBackpack.userGetNewCard(user.qqId, rdCard.id)
                     }
                 }
             }
             SSR -> {
                 metaCost = amount * 300
-                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SSR制造需要300个材料！")
+                if(User.find(user.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个SSR制造需要300个材料！")
 
                 for (i in 0..amount) {
                     if((1..10).random() == 1) {
                         val rdCard = CardMgr.getRandomSSR()
                         byCard.add(rdCard)
-                        CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                        CardBackpack.userGetNewCard(user.qqId, rdCard.id)
                     }
                 }
             }
             UR -> {
                 metaCost = amount * 3000
-                if(User.find(result.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个UR制造需要3000个材料！")
+                if(User.find(user.qqId).material < metaCost) return PlainText("$name,你根本没有那么多材料！每个UR制造需要3000个材料！")
 
                 for (i in 0..amount) {
                     if((1..4).random() == 1) {
                         val rdCard = CardMgr.getRandomSSR()
                         byCard.add(rdCard)
-                        CardBackpack.userGetNewCard(result.qqId, rdCard.id)
+                        CardBackpack.userGetNewCard(user.qqId, rdCard.id)
                     }
                 }
             }
             null -> return PlainText("$name,我根本不知道你在说什么！")
         }
-        CardBackpack.userGetNewCard(result.qqId, card.id, amount)
-        Vault.subMaterial(result.qqId, metaCost)
+        CardBackpack.userGetNewCard(user.qqId, card.id, amount)
+        Vault.subMaterial(user.qqId, metaCost)
         var text: Message = PlainText("$name,你成功使用 $metaCost 个材料制造了 $amount 个 ${card.name}！")
 
         if(byCard.isNotEmpty()) {
