@@ -8,9 +8,8 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m10r3
-        |支持分解与品阶之间不加空格
-        |支持一键分解ssr
+        |版本号：2021m10r4
+        |修复已知bug
         |增加潜在的bug
         """.trimMargin())
 

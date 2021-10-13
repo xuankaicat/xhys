@@ -24,9 +24,9 @@ object CommandRule {
         return PlainText(builder.toString())
     }
 
-    fun get() : Message {
-        val msg = CommandMgr.msg
-        val args = CommandMgr.args
+    fun get(data: CommandMgr.CommandResult) : Message {
+        val msg = data.msg
+        val args = data.args
         //无参数或参数为?则显示规则帮助
         if(args.isEmpty() || args[0] == "?" || args[0] == "？") return getHelpMessage()
         if(msg.subject !is Group) return PlainText("目前只支持设置群聊规则！请在你的群中使用rule指令")

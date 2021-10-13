@@ -28,9 +28,9 @@ object Repeat {
     }
 
     /**调整复读功率*/
-    fun commandRp() : Message {
-        val msg = CommandMgr.msg
-        val args = CommandMgr.args
+    fun commandRp(data: CommandMgr.CommandResult) : Message {
+        val msg = data.msg
+        val args = data.args
         if(msg.subject !is Group) return PlainText("目前只支持设置群聊复读功率！请在你的群中使用rp指令")
         if(args.size != 1) return PlainText("参数不正确，应该使用.rp <value>！")
         msg.apply {

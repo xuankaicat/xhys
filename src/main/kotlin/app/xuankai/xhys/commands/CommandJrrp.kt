@@ -1,6 +1,7 @@
 package app.xuankai.xhys.commands
 
 import app.xuankai.xhys.managers.CommandMgr
+import app.xuankai.xhys.mysql.model.User
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import java.time.LocalDate
@@ -29,13 +30,13 @@ object CommandJrrp {
         "你还希望听到什么好消息？"
     )
 
-    fun get() : Message {
-        val msg = CommandMgr.msg
-        val args = CommandMgr.args
+    fun get(data: CommandMgr.CommandResult) : Message {
+        val msg = data.msg
+        val args = data.args
         if(args.isNotEmpty()) return PlainText("jrrp不存在参数！")
         msg.apply {
             val randoms = getRpValue(source.fromId)
-            addJrrpMoney(randoms)
+            addJrrpMoney(data.user, randoms)
             val extraString: String
             val calendar = Calendar.getInstance()
             //calendar.timeInMillis = (time * 1000).toLong()
@@ -57,7 +58,7 @@ object CommandJrrp {
                     else -> extraStringList.random()
                 }
             }
-            val name = CommandMgr.name
+            val name = data.name
             return PlainText("${name},你今天的人品值是${randoms}。${extraString}")
         }
     }
@@ -73,10 +74,9 @@ object CommandJrrp {
         return if (r1 == 1 && r2 < 90 || r2 == 1 && r1 < 90) 1 else max(r1, r2)
     }
 
-    private fun addJrrpMoney(rpvalue: Int){
+    private fun addJrrpMoney(user: User, rpvalue: Int){
         val today : LocalDate = LocalDate.now()
         //val user = User.find(qqId)
-        val user = CommandMgr.user
         if(today != user.lastjrrp){
             user.money += when (rpvalue) {
                 1 -> 100
