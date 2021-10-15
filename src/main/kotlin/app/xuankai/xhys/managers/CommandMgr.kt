@@ -155,7 +155,7 @@ object CommandMgr {
 
     private suspend fun getCmdFunResult(f: Any?, data: CommandResult): Message {
         @Suppress("UNCHECKED_CAST")
-        return (f as? KFunction1<CommandResult, Message>)?.invoke(data)
+        return (f as? (CommandResult) -> Message)?.invoke(data)
             ?: (f as? KSuspendFunction1<CommandResult, Message>)?.invoke(data)
             ?: PlainText("")
     }
