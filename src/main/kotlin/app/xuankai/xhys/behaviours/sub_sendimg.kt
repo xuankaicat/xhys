@@ -104,6 +104,17 @@ fun XhysMiraiBot.sendimg(){
                 this.javaClass.getResourceAsStream("/笑死.png")!!.sendAsImageTo(subject)
                 lastMsg.remove(id)
             }
+            contains("摆烂") block@ {
+                val id: Long
+                if (subject is Group) {
+                    id = source.targetId
+                    if(!groupList.first{it.groupId == source.targetId}.ruleObj.sendKeyWordImage) return@block
+                } else {
+                    id = source.fromId
+                }
+                this.javaClass.getResourceAsStream("/摆烂.jpg")!!.sendAsImageTo(subject)
+                lastMsg.remove(id)
+            }
         }
     }
 }

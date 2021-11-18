@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "app.xuankai"
-version = "2021m10r5"
+version = "2021m11r1"
 
 repositories {
     //maven {setUrl("https://dl.bintray.com/kotlin/kotlin-eap")}

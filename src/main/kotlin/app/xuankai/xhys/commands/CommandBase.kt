@@ -8,9 +8,9 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2021m10r5
-        |修复已知bug
-        |增加1个新ssr
+        |版本号：2021m11r1
+        |提高容错
+        |.sb
         |增加潜在的bug
         """.trimMargin())
 
