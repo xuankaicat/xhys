@@ -6,8 +6,6 @@ import app.xuankai.xhys.behaviours.Repeat
 import app.xuankai.xhys.commands.CommandBase
 import app.xuankai.xhys.commands.CommandJrrp
 import app.xuankai.xhys.commands.CommandRule
-import app.xuankai.xhys.mysql.ConnPool
-import app.xuankai.xhys.mysql.ConnPoolProxy
 import app.xuankai.xhys.mysql.DataMysql
 import app.xuankai.xhys.mysql.enums.CardRarity.*
 import app.xuankai.xhys.mysql.model.BlackFood
@@ -25,16 +23,15 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
-import java.sql.Connection
-import java.sql.DriverManager
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.reflect.*
 
 object CommandMgr {
+    private const val COMMAND_ADMIN = 1277961681L
+
     private var cmdStrPattern = ""
     //不需要任何参数的指令
-    private val baseCmd = HashMap<String, KFunction0<Message>>()
+    private val baseCmd = HashMap<String, ()->Message>()
     //需要当前环境信息的指令，形如 (MessageEvent, List<String>) -> Message
     private val cmd = HashMap<String, Any>()
 
@@ -88,13 +85,13 @@ object CommandMgr {
             register(CommandRule::get, "rule")
 
             register(CommandResult::commandUpdateVersionControl, "uvc")
-            register(CommandResult::commandUpdateCardPool, "ucp")
+            register(CommandResult::commandUpdate, "update")
         }
     }
 
     @JvmName("registerStringMessage")
-    private fun HashMap<String, KFunction0<Message>>.register(
-        f: KFunction0<Message>,
+    private fun HashMap<String, ()->Message>.register(
+        f: ()->Message,
         vararg cmdNames: String) {
 
         for (name in cmdNames) {
@@ -105,7 +102,7 @@ object CommandMgr {
 
     @JvmName("registerStringCommandResultMessage")
     private fun HashMap<String, Any>.register(
-        f: KFunction1<CommandResult, Message>,
+        f: (CommandResult) -> Message,
         vararg cmdNames: String) {
 
         for (name in cmdNames) {
@@ -117,7 +114,7 @@ object CommandMgr {
 
     @JvmName("registerStringAny")
     private fun HashMap<String, Any>.register(
-        f: KSuspendFunction1<CommandResult, Message>,
+        f: suspend (CommandResult) -> Message,
         vararg cmdNames: String) {
 
         for (name in cmdNames) {
@@ -125,27 +122,6 @@ object CommandMgr {
             cmdStrPattern += "|${name}"
         }
     }
-
-//    private fun HashMap<String, Any>.register(
-//        f: () -> Message,
-//        vararg cmdNames: String) {
-//
-//        for (name in cmdNames) {
-//            this[name] = f
-//            cmdStrPattern += "|${name}"
-//        }
-//    }
-
-//    @JvmName("registerStringAny")
-//    private fun HashMap<String, Any>.register(
-//        f: KSuspendFunction0<Message>,
-//        vararg cmdNames: String
-//    ) {
-//        for (name in cmdNames) {
-//            this[name] = f
-//            cmdStrPattern += "|${name}"
-//        }
-//    }
 
     private val pattern = Pattern.compile("^[.|。]\\s?(?<name>\\S+)\\s*?(?<params>.*)$",
         Pattern.CASE_INSENSITIVE)
@@ -156,7 +132,7 @@ object CommandMgr {
     private suspend fun getCmdFunResult(f: Any?, data: CommandResult): Message {
         @Suppress("UNCHECKED_CAST")
         return (f as? (CommandResult) -> Message)?.invoke(data)
-            ?: (f as? KSuspendFunction1<CommandResult, Message>)?.invoke(data)
+            ?: (f as? suspend (CommandResult) -> Message)?.invoke(data)
             ?: PlainText("")
     }
 
@@ -230,22 +206,23 @@ object CommandMgr {
         fun close() = resultPool.add(this)
 
         fun commandUpdateVersionControl() : Message {
-            if(args.isNotEmpty()) return PlainText("")
-            if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
-            val qqIdList = DataMysql.query<User>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= 80")
+            if(msg.source.sender.id != COMMAND_ADMIN) return PlainText("权限不足，操作失败！")
+            if(args.size != 2) return PlainText("[Error]param1: Count, param2: cardId")
+            val qqIdList = DataMysql.query<User>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= ${args[0]}")
             val stringBuilder = StringBuilder("insert into cardbackpack(qqId, cardId, amount) values")
             var first = true
             for(id in qqIdList.map { it.qqId }) {
                 if(first) first = false else stringBuilder.append(',')
-                stringBuilder.append("($id, 91, 1)")
+                stringBuilder.append("($id, ${args[1]}, 1)")
             }
             DataMysql.executeSql(stringBuilder.toString())
-            return PlainText("升级成功，语句为$stringBuilder")
+            return PlainText("操作成功，影响数量：${qqIdList.size}")
         }
 
-        fun commandUpdateCardPool() : Message {
+        fun commandUpdate() : Message {
             if(args.isNotEmpty()) return PlainText("")
-            if(msg.source.sender.id != 1277961681L) return PlainText("权限不足，操作失败！")
+            if(msg.source.sender.id != COMMAND_ADMIN) return PlainText("权限不足，操作失败！")
+            CardMgr.imgPoolInit()
             CardMgr.poolInit()
             return PlainText("卡池更新成功！")
         }

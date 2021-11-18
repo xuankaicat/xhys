@@ -15,6 +15,7 @@ import java.io.File
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.imageio.IIOException
 import javax.imageio.ImageIO
 import kotlin.collections.ArrayList
 
@@ -38,11 +39,21 @@ object CardMgr {
     private val backpackCover: BufferedImage = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/itemCover.png"))
 
     init {
-        cardList.forEach {
-            CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
-        }
+        imgPoolInit()
 
         poolInit()
+    }
+
+    fun imgPoolInit() {
+        CardImgPool.clear()
+        val notFound = ImageIO.read(CardMgr.javaClass.getResourceAsStream("/images/not_found.jpg"))
+        cardList.forEach {
+            try {
+                CardImgPool[it.id] = ImageIO.read(File("./images", it.pic))
+            } catch (e: IIOException) {
+                CardImgPool[it.id] = notFound
+            }
+        }
     }
 
     fun poolInit() {
