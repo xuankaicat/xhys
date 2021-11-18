@@ -19,9 +19,11 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.EventPriority
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
+import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
+import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.util.*
 import java.util.regex.Pattern
@@ -64,6 +66,7 @@ object CommandMgr {
         cmd.apply {
             register(CommandJrrp::get, "jrrp")
             register(Repeat::commandRp, "rp")
+            register(CommandResult::commandSb, "sb")
             register(CommandResult::commandMoney, "money", "coin")
             register(CommandResult::commandDrawCard, "drawcard", "十连")
             register(CommandResult::commandSoHa, "sohacard", "梭哈")
@@ -205,26 +208,36 @@ object CommandMgr {
         fun initUser() { user = User.find(msg.source.fromId) }
         fun close() = resultPool.add(this)
 
-        fun commandUpdateVersionControl() : Message {
-            if(msg.source.sender.id != COMMAND_ADMIN) return PlainText("权限不足，操作失败！")
+        suspend fun commandUpdateVersionControl() : Message {
+            if(msg.source.sender.id != COMMAND_ADMIN) {
+                val img = this.javaClass.getResourceAsStream("/摆烂.jpg")!!
+                return img.uploadAsImage(msg.subject)
+            }
             if(args.size != 2) return PlainText("[Error]param1: Count, param2: cardId")
             val qqIdList = DataMysql.query<User>("select qqId from cardbackpack GROUP BY qqId HAVING count(*) >= ${args[0]}")
             val stringBuilder = StringBuilder("insert into cardbackpack(qqId, cardId, amount) values")
             var first = true
             for(id in qqIdList.map { it.qqId }) {
-                if(first) first = false else stringBuilder.append(',')
+                if(first) first = false else stringBuilder.append(",")
                 stringBuilder.append("($id, ${args[1]}, 1)")
             }
             DataMysql.executeSql(stringBuilder.toString())
             return PlainText("操作成功，影响数量：${qqIdList.size}")
         }
 
-        fun commandUpdate() : Message {
-            if(args.isNotEmpty()) return PlainText("")
-            if(msg.source.sender.id != COMMAND_ADMIN) return PlainText("权限不足，操作失败！")
+        suspend fun commandUpdate() : Message {
+            if(args.isNotEmpty() || msg.source.sender.id != COMMAND_ADMIN) {
+                val img = this.javaClass.getResourceAsStream("/摆烂.jpg")!!
+                return img.uploadAsImage(msg.subject)
+            }
             CardMgr.imgPoolInit()
             CardMgr.poolInit()
             return PlainText("卡池更新成功！")
+        }
+
+        fun commandSb() : Message {
+            if(msg.subject !is Group) return PlainText(msg.senderName)
+            return At(user.qqId)
         }
 
         fun commandMoney() : Message {
