@@ -3,10 +3,10 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     java
 
-    val kotlinVersion = "1.5.30"
+    val kotlinVersion = "1.6.10"
     kotlin("jvm") version kotlinVersion
 
-    id("com.github.johnrengelman.shadow") version "6.1.0"//使用shadow对依赖进行打包
+    id("com.github.johnrengelman.shadow") version "7.1.2"//使用shadow对依赖进行打包
 }
 
 group = "app.xuankai"
@@ -19,14 +19,14 @@ repositories {
 }
 
 dependencies {
-    val miraiVersion = "2.9.0-M1"
+    val miraiVersion = "2.10.0"
 
     // 开发时使用 mirai-core-api，运行时提供 mirai-core
     api("net.mamoe", "mirai-core-api", miraiVersion)
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion)
 
     //mysql
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.5.6")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.6.3")
     implementation("mysql:mysql-connector-java:8.0.27")
 }
 
