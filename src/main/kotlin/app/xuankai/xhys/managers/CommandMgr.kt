@@ -23,7 +23,6 @@ import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.messageChainOf
-import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 import java.util.*
 import java.util.regex.Pattern
@@ -372,10 +371,15 @@ object CommandMgr {
         fun commandPay() : Message {
             if(args.size != 2) return PlainText("参数不对喔，先写要付给谁再写要付多少枚硬币！中间用空格分开！")
 
-            if(!Vault.userSendCoin(user.qqId, args[0].toLong(), args[1].toLong())) return PlainText.format(Vault.canNotEffortText,
+            val qqId = args[0].toLong()
+            val count = args[1].toLong()
+
+            if(count <= 0) return PlainText("必须支付大于0的整数个硬币！")
+
+            if(!Vault.userSendCoin(user.qqId, qqId, count)) return PlainText.format(Vault.canNotEffortText,
                 name
             )
-            if(args[0].toLong() == user.qqId) return PlainText("${name},你成功把${args[1]}枚硬币从左手放到了右手！")
+            if(qqId == user.qqId) return PlainText("${name},你成功把${args[1]}枚硬币从左手放到了右手！")
             return PlainText("${name},你成功支付给${args[0]} ${args[1]}枚硬币！")
         }
 

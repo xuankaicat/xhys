@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "app.xuankai"
-version = "2021m11r2"
+version = "2022m3r1"
 
 repositories {
     //maven {setUrl("https://dl.bintray.com/kotlin/kotlin-eap")}
@@ -19,14 +19,14 @@ repositories {
 }
 
 dependencies {
-    val miraiVersion = "2.10.0"
+    val miraiVersion = "2.10.1"
 
     // 开发时使用 mirai-core-api，运行时提供 mirai-core
-    api("net.mamoe", "mirai-core-api", miraiVersion)
-    runtimeOnly("net.mamoe", "mirai-core", miraiVersion)
+    api("net.mamoe:mirai-core-api:$miraiVersion")
+    runtimeOnly("net.mamoe:mirai-core:$miraiVersion")
 
     //mysql
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.6.3")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.6.4")
     implementation("mysql:mysql-connector-java:8.0.27")
 }
 
