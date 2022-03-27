@@ -1,6 +1,8 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
+import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CommandMgr
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.EventPriority
@@ -9,6 +11,7 @@ import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 
 object Repeat {
+    @Behaviour
     fun XhysMiraiBot.repeater(){
         apply {
             miraiBot.eventChannel.subscribeAlways<GroupMessageEvent>(priority = EventPriority.LOW) {
@@ -26,6 +29,7 @@ object Repeat {
     }
 
     /**调整复读功率*/
+    @Command("rp")
     fun commandRp(data: CommandMgr.CommandResult) : Message {
         val msg = data.msg
         val args = data.args

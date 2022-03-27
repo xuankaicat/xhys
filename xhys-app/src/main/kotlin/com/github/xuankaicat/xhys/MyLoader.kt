@@ -35,7 +35,7 @@ suspend fun main(args: Array<String>) {
         baseReply()//基本回复
         repeater()//复读机
         eat()//吃
-        sendimg()//发送固定图片
+        sendImg()//发送固定图片
         nudgeBot()//戳一戳
 
         miraiBot.join() // 等待 Bot 离线, 避免主线程退出

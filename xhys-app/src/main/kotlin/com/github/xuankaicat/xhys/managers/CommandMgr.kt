@@ -6,6 +6,7 @@ import com.github.xuankaicat.xhys.behaviours.Repeat
 import com.github.xuankaicat.xhys.commands.CommandBase
 import com.github.xuankaicat.xhys.commands.CommandJrrp
 import com.github.xuankaicat.xhys.commands.CommandRule
+import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.mysql.DataMysql
 import com.github.xuankaicat.xhys.mysql.enums.CardRarity.*
 import com.github.xuankaicat.xhys.mysql.model.BlackFood
@@ -207,6 +208,7 @@ object CommandMgr {
         fun initUser() { user = User.find(msg.source.fromId) }
         fun close() = resultPool.add(this)
 
+        @Command("uvc")
         suspend fun commandUpdateVersionControl() : Message {
             if(msg.source.sender.id != COMMAND_ADMIN) {
                 val img = this.javaClass.getResourceAsStream("/摆烂.jpg")!!
@@ -224,6 +226,7 @@ object CommandMgr {
             return PlainText("操作成功，影响数量：${qqIdList.size}")
         }
 
+        @Command("update")
         suspend fun commandUpdate() : Message {
             if(args.isNotEmpty() || msg.source.sender.id != COMMAND_ADMIN) {
                 val img = this.javaClass.getResourceAsStream("/摆烂.jpg")!!
@@ -234,17 +237,20 @@ object CommandMgr {
             return PlainText("卡池更新成功！")
         }
 
+        @Command("sb")
         fun commandSb() : Message {
             if(msg.subject !is Group) return PlainText(msg.senderName)
             return At(user.qqId)
         }
 
+        @Command("money", "coin")
         fun commandMoney() : Message {
             if(args.isNotEmpty()) return PlainText("参数不正确，应该使用.money！")
             val money = user.money - user.usedMoney
             return PlainText("${name},你一共获得过${user.money}枚硬币，还存着${money}枚可以用!")
         }
 
+        @Command("atetext")
         fun commandAtetext() : Message {
             if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText,
                 name
@@ -261,6 +267,7 @@ object CommandMgr {
             return PlainText("${name},你成功花费10枚硬币把被吃文字改成了${value}")
         }
 
+        @Command("nn")
         fun commandNn() : Message {
             if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText,
                 name
@@ -277,6 +284,7 @@ object CommandMgr {
             return PlainText("${name},你成功花费10枚硬币把昵称改成了${value}！")
         }
 
+        @Command("blackfood")
         fun commandBlackfood() : Message {
             if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText,
                 name
@@ -293,6 +301,7 @@ object CommandMgr {
             return PlainText("${name},你成功花费10枚硬币把${value}添加到了食物黑名单！")
         }
 
+        @Command("unblackfood")
         fun commandUnblackfood() : Message {
             if(!Vault.subCoin(user.qqId, 10)) return PlainText.format(Vault.canNotEffortText,
                 name
@@ -308,6 +317,7 @@ object CommandMgr {
             return PlainText("${name},你成功花费10枚硬币把${value}从食物黑名单去掉了！")
         }
 
+        @Command("drawcard", "十连")
         suspend fun commandDrawCard() : Message {
             val pool = if(args.isEmpty()) null else args[0]
             if(pool != null && pool[0] !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
@@ -320,6 +330,7 @@ object CommandMgr {
                 stream.uploadAsImage(msg.subject))
         }
 
+        @Command("sohacard", "梭哈")
         suspend fun commandSoHa() : Message {
             val pool = if(args.isEmpty()) null else args[0]
             if(pool != null && pool[0] !in CardMgr.cardPoolList) return PlainText("没有这个卡池！输入.pool查看有哪些卡池存在！")
@@ -334,18 +345,21 @@ object CommandMgr {
                 stream.uploadAsImage(msg.subject))
         }
 
+        @Command("活动十连")
         suspend fun commandActivityDrawCard() : Message {
             if(args.isNotEmpty()) return PlainText("")
             args = listOf("A")
             return commandDrawCard()
         }
 
+        @Command("活动梭哈")
         suspend fun commandActivitySoHa() : Message {
             if(args.isNotEmpty()) return PlainText("")
             args = listOf("A")
             return commandSoHa()
         }
 
+        @Command("bag", "backpack", "背包")
         suspend fun commandBackpack() : Message {
             if(args.size > 1) return PlainText("参数不正确，应该使用.backpack <page>！")
 
@@ -357,6 +371,7 @@ object CommandMgr {
                 stream.uploadAsImage(msg.subject))
         }
 
+        @Command("item", "物品")
         suspend fun commandItem() : Message {
             if(args.size > 1) return PlainText("参数不正确，应该使用.item <page>！")
 
@@ -368,6 +383,7 @@ object CommandMgr {
                 stream.uploadAsImage(msg.subject))
         }
 
+        @Command("pay")
         fun commandPay() : Message {
             if(args.size != 2) return PlainText("参数不对喔，先写要付给谁再写要付多少枚硬币！中间用空格分开！")
 
@@ -383,6 +399,7 @@ object CommandMgr {
             return PlainText("${name},你成功支付给${args[0]} ${args[1]}枚硬币！")
         }
 
+        @Command("send")
         fun commandSend() : Message {
             if(args.size != 2 && args.size != 3) return PlainText("参数不对喔，先写要付给谁再写卡牌的ID再写数量！中间用空格分开！")
 
@@ -394,21 +411,25 @@ object CommandMgr {
             return PlainText("${name},你成功把 $amount 个 $cardName 交给了${args[0]}!")
         }
 
+        @Command("disenchantr", "分解r")
         fun commandDisenchantR() : Message {
             args = listOf("R")
             return commandDisenchant()
         }
 
+        @Command("disenchantsr", "分解sr")
         fun commandDisenchantSR() : Message {
             args = listOf("SR")
             return commandDisenchant()
         }
 
+        @Command("disenchantssr", "分解ssr")
         fun commandDisenchantSSR() : Message {
             args = listOf("SSR").plus(args)
             return commandDisenchant()
         }
 
+        @Command("disenchant", "分解", "材料")
         fun commandDisenchant() : Message {
             if(args.isEmpty()) {
                 //获取分解列表的情况
@@ -464,6 +485,7 @@ object CommandMgr {
             }
         }
 
+        @Command("make", "制造")
         fun commandMake() : Message {
             if(args.size != 1 && args.size != 2) return PlainText("参数不对喔，应该使用.make <Id> <数量>！")
             val cardId = args[0].toInt()

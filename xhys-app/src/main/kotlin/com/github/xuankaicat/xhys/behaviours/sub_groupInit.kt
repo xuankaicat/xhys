@@ -1,9 +1,11 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.mysql.model.Group
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 
+@Behaviour
 fun XhysMiraiBot.initExistingGroup(){
     apply {
         //启动时初始化已有群组

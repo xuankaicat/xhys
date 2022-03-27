@@ -1,18 +1,21 @@
 package com.github.xuankaicat.xhys.commands
 
 import com.github.xuankaicat.xhys.BuildConfig
+import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CardMgr
 import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 
 object CommandBase {
+    @Command("log")
     fun log() : Message =
         PlainText("""
         |版本号：${BuildConfig.VERSION_NAME}
         |增加潜在的bug
         """.trimMargin())
 
+    @Command("pool", "卡池")
     fun pool() : Message =
         PlainText("""
         |每次十连会消耗100枚硬币
@@ -21,6 +24,7 @@ object CommandBase {
         |.drawcard或.十连
         """.trimMargin().plus("\n${CardMgr.cardPoolText}"))
 
+    @Command("help", "帮助")
     fun help() : Message =
         PlainText("""
         |这些是小黄勇士听得懂的话：
@@ -40,6 +44,7 @@ object CommandBase {
         |.rule 设置群规则
         """.trimMargin())
 
+    @Command("pshelp")
     fun psHelp() : Message =
         PlainText("""
         |这些是小黄勇士的付费项目：
@@ -55,5 +60,6 @@ object CommandBase {
         |.活动梭哈 梭哈活动卡池
         """.trimMargin())
 
+    @Command("dice", "骰子")
     fun dice(): Message = Dice.random()
 }

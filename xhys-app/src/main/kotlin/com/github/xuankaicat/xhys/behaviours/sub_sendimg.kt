@@ -1,12 +1,13 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 
-
-fun XhysMiraiBot.sendimg(){
+@Behaviour
+fun XhysMiraiBot.sendImg(){
     apply {
         miraiBot.eventChannel.subscribeMessages {
             (containsAny("?", "？")) block@ {

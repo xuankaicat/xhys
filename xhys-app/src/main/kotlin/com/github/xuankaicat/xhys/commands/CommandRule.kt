@@ -1,6 +1,7 @@
 package com.github.xuankaicat.xhys.commands
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CommandMgr
 import com.github.xuankaicat.xhys.mysql.model.Rule
 import com.github.xuankaicat.xhys.mysql.model.RuleDescription
@@ -23,6 +24,7 @@ object CommandRule {
         return PlainText(builder.toString())
     }
 
+    @Command("rule")
     fun get(data: CommandMgr.CommandResult) : Message {
         val msg = data.msg
         val args = data.args

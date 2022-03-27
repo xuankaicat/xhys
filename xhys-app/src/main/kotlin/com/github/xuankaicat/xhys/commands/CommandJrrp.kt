@@ -1,5 +1,6 @@
 package com.github.xuankaicat.xhys.commands
 
+import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CommandMgr
 import com.github.xuankaicat.xhys.mysql.model.User
 import net.mamoe.mirai.message.data.Message
@@ -30,6 +31,7 @@ object CommandJrrp {
         "你还希望听到什么好消息？"
     )
 
+    @Command("jrrp")
     fun get(data: CommandMgr.CommandResult) : Message {
         val msg = data.msg
         val args = data.args
