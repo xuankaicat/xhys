@@ -10,3 +10,4 @@ rootProject.name = "xhys"
 include("xhys-app")
 include("xhys-core")
 include("xhys-ksp")
+include("xhys-ksp-annotation")

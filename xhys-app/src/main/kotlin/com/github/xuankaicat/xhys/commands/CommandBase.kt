@@ -1,5 +1,6 @@
 package com.github.xuankaicat.xhys.commands
 
+import com.github.xuankaicat.xhys.BuildConfig
 import com.github.xuankaicat.xhys.managers.CardMgr
 import net.mamoe.mirai.message.data.Dice
 import net.mamoe.mirai.message.data.Message
@@ -8,7 +9,7 @@ import net.mamoe.mirai.message.data.PlainText
 object CommandBase {
     fun log() : Message =
         PlainText("""
-        |版本号：2022m3r1
+        |版本号：${BuildConfig.VERSION_NAME}
         |增加潜在的bug
         """.trimMargin())
 

@@ -1,9 +1,14 @@
 plugins {
     kotlin("jvm")
+    id("com.google.devtools.ksp")
 }
 
 dependencies {
-    implementation(project(":xhys-core"))
+    implementation(project(":xhys-ksp-annotation"))
+
+    ksp("com.google.auto.service:auto-service:1.0.1")
+    compileOnly("com.google.auto.service:auto-service-annotations:1.0.1")
+
     // https://mvnrepository.com/artifact/com.squareup/kotlinpoet
     implementation("com.squareup:kotlinpoet:1.10.2")
 
