@@ -1,6 +1,8 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.behaviours.Eat.eat
+import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CommandMgr
@@ -12,7 +14,8 @@ import net.mamoe.mirai.message.data.PlainText
 
 object Repeat {
     @Behaviour
-    fun XhysMiraiBot.repeater(){
+    fun IXhysBot.repeater(){
+        this as XhysMiraiBot
         apply {
             miraiBot.eventChannel.subscribeAlways<GroupMessageEvent>(priority = EventPriority.LOW) {
                 val droppedMessage = message.drop(1).toString()

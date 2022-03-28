@@ -1,6 +1,8 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.behaviours.Eat.eat
+import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
@@ -8,7 +10,8 @@ import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
 
 @Behaviour
-fun XhysMiraiBot.baseReply(){
+fun IXhysBot.baseReply(){
+    this as XhysMiraiBot
     apply {
         miraiBot.eventChannel.subscribeMessages {
             "小黄勇士power！" reply { powerReply(this) }

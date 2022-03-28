@@ -1,6 +1,5 @@
 package com.github.xuankaicat.xhys.commands
 
-import com.github.xuankaicat.xhys.BuildConfig
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CardMgr
 import net.mamoe.mirai.message.data.Dice
@@ -11,7 +10,7 @@ object CommandBase {
     @Command("log")
     fun log() : Message =
         PlainText("""
-        |版本号：${BuildConfig.VERSION_NAME}
+        |版本号：$\{BuildConfig.VERSION_NAME}
         |增加潜在的bug
         """.trimMargin())
 

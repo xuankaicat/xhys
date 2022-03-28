@@ -1,9 +1,6 @@
 package com.github.xuankaicat.xhys
 
-import com.github.xuankaicat.xhys.behaviours.*
-import com.github.xuankaicat.xhys.behaviours.Eat.eat
-import com.github.xuankaicat.xhys.behaviours.Repeat.repeater
-import com.github.xuankaicat.xhys.managers.CommandMgr.initCommandSystem
+import com.github.xuankaicat.xhys.ksp.generated.initBehaviours
 import com.github.xuankaicat.xhys.mysql.model.BlackFood
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
@@ -26,17 +23,7 @@ suspend fun main(args: Array<String>) {
 
         foodBlackList = BlackFood.all().map { it.eatStr } as ArrayList<String>
 
-        initExistingUsers()//初始化新用户
-        initExistingGroup()//初始化群组
-
-        addNew()//添加新朋友
-        atEvent()//at
-        initCommandSystem()//指令系统
-        baseReply()//基本回复
-        repeater()//复读机
-        eat()//吃
-        sendImg()//发送固定图片
-        nudgeBot()//戳一戳
+        initBehaviours()
 
         miraiBot.join() // 等待 Bot 离线, 避免主线程退出
     }

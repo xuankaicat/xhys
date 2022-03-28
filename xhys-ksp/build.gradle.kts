@@ -4,13 +4,15 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":xhys-core"))
     implementation(project(":xhys-ksp-annotation"))
 
-    ksp("com.google.auto.service:auto-service:1.0.1")
+    compileOnly("dev.zacsweers.autoservice:auto-service-ksp:1.0.0")
+    ksp("dev.zacsweers.autoservice:auto-service-ksp:1.0.0")
     compileOnly("com.google.auto.service:auto-service-annotations:1.0.1")
 
     // https://mvnrepository.com/artifact/com.squareup/kotlinpoet
-    implementation("com.squareup:kotlinpoet:1.10.2")
+    implementation("com.squareup:kotlinpoet:1.11.0")
 
     compileOnly(kotlin("compiler-embeddable"))
     // https://mvnrepository.com/artifact/com.google.devtools.ksp/symbol-processing-api

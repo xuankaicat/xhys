@@ -1,6 +1,8 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
+import com.github.xuankaicat.xhys.behaviours.Eat.eat
+import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.subscribeMessages
@@ -8,7 +10,8 @@ import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 
 @Behaviour
-fun XhysMiraiBot.atEvent(){
+fun IXhysBot.atEvent(){
+    this as XhysMiraiBot
     apply {
         miraiBot.eventChannel.subscribeMessages {
             atBot {

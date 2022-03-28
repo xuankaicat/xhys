@@ -6,6 +6,8 @@ import com.github.xuankaicat.xhys.behaviours.Repeat
 import com.github.xuankaicat.xhys.commands.CommandBase
 import com.github.xuankaicat.xhys.commands.CommandJrrp
 import com.github.xuankaicat.xhys.commands.CommandRule
+import com.github.xuankaicat.xhys.core.IXhysBot
+import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.mysql.DataMysql
 import com.github.xuankaicat.xhys.mysql.enums.CardRarity.*
@@ -179,7 +181,9 @@ object CommandMgr {
      * 指令入口
      * @receiver XhysMiraiBot
      */
-    fun XhysMiraiBot.initCommandSystem(){
+    @Behaviour
+    fun IXhysBot.initCommandSystem(){
+        this as XhysMiraiBot
         apply {
             miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
                 (startsWith(".") or startsWith("。")){
