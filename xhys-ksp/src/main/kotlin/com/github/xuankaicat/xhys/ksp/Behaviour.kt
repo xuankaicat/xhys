@@ -5,13 +5,11 @@ import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.google.auto.service.AutoService
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.Import
 
 @AutoService(SymbolProcessorProvider::class)
 class BehaviourProcessorProvider : SymbolProcessorProvider {
@@ -41,7 +39,7 @@ class BehaviourProcessor(
     override fun process(resolver: Resolver): List<KSAnnotated> {
         if (invoked) return emptyList()
 
-        val symbols = resolver.getSymbolsWithAnnotation(Behaviour::class.qualifiedName!!, true)
+        val symbols = resolver.getSymbolsWithAnnotation(Behaviour::class.qualifiedName!!)
         val ret = symbols.filter { !it.validate() }
 
         symbols.filter { it is KSFunctionDeclaration && it.validate() }
