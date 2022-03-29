@@ -24,7 +24,7 @@ dependencies {
     runtimeOnly("net.mamoe:mirai-core") // 运行时使用
 
     //mysql
-    implementation("org.springframework.boot:spring-boot-starter-jdbc:2.6.5")
+    //implementation("org.springframework.boot:spring-boot-starter-jdbc:2.6.5")
     implementation("mysql:mysql-connector-java:8.0.28")
 }
 
