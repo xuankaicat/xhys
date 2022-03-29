@@ -3,9 +3,9 @@ package com.github.xuankaicat.xhys.model
 import com.github.xuankaicat.xhys.Vault
 import com.github.xuankaicat.xhys.core.mysql.DataMysql
 import com.github.xuankaicat.xhys.core.mysql.IObjectMysql
-import com.github.xuankaicat.xhys.core.mysql.enums.CardRarity
-import com.github.xuankaicat.xhys.core.mysql.enums.CardRarity.*
-import com.github.xuankaicat.xhys.core.mysql.viewModel.UserCardBackpackItem
+import com.github.xuankaicat.xhys.enums.CardRarity
+import com.github.xuankaicat.xhys.enums.CardRarity.*
+import com.github.xuankaicat.xhys.viewModel.UserCardBackpackItem
 import java.math.BigDecimal
 
 open class CardBackpack : IObjectMysql {

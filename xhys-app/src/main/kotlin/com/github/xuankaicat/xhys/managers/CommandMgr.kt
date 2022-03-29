@@ -10,11 +10,11 @@ import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.core.mysql.DataMysql
-import com.github.xuankaicat.xhys.core.mysql.enums.CardRarity.*
+import com.github.xuankaicat.xhys.enums.CardRarity.*
 import com.github.xuankaicat.xhys.model.BlackFood
-import com.github.xuankaicat.xhys.core.mysql.model.Card
+import com.github.xuankaicat.xhys.model.Card
 import com.github.xuankaicat.xhys.model.CardBackpack
-import com.github.xuankaicat.xhys.core.mysql.model.User
+import com.github.xuankaicat.xhys.model.User
 import com.github.xuankaicat.xhys.utils.CommandUtils
 import com.github.xuankaicat.xhys.utils.format
 import com.github.xuankaicat.xhys.utils.toInputStream
