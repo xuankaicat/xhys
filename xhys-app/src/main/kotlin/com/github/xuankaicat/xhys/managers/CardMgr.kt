@@ -1,12 +1,12 @@
 package com.github.xuankaicat.xhys.managers
 
 import com.github.xuankaicat.xhys.Vault
-import com.github.xuankaicat.xhys.mysql.enums.CardRarity
-import com.github.xuankaicat.xhys.mysql.enums.CardRarity.*
-import com.github.xuankaicat.xhys.mysql.model.Card
-import com.github.xuankaicat.xhys.mysql.model.CardBackpack
-import com.github.xuankaicat.xhys.mysql.model.CardPool
-import com.github.xuankaicat.xhys.mysql.model.User
+import com.github.xuankaicat.xhys.enums.CardRarity
+import com.github.xuankaicat.xhys.model.CardBackpack
+import com.github.xuankaicat.xhys.model.CardPool
+import com.github.xuankaicat.xhys.enums.CardRarity.*
+import com.github.xuankaicat.xhys.model.Card
+import com.github.xuankaicat.xhys.model.User
 import java.awt.Color
 import java.awt.FontMetrics
 import java.awt.Graphics2D

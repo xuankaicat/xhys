@@ -1,4 +1,4 @@
-package com.github.xuankaicat.xhys.mysql
+package com.github.xuankaicat.xhys.core.mysql
 
 import java.sql.Connection
 import java.sql.ResultSet

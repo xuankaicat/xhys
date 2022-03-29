@@ -18,14 +18,6 @@ dependencies {
     implementation(project(":xhys-core"))
     implementation(project(":xhys-ksp-annotation"))
     ksp(project(":xhys-ksp"))
-
-    api(platform("net.mamoe:mirai-bom:2.10.1"))
-    api("net.mamoe:mirai-core-api")     // 编译代码使用
-    runtimeOnly("net.mamoe:mirai-core") // 运行时使用
-
-    //mysql
-    //implementation("org.springframework.boot:spring-boot-starter-jdbc:2.6.5")
-    implementation("mysql:mysql-connector-java:8.0.28")
 }
 
 buildConfig {

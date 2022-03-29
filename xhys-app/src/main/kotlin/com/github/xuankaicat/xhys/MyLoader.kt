@@ -1,7 +1,7 @@
 package com.github.xuankaicat.xhys
 
 import com.github.xuankaicat.xhys.ksp.generated.initBehaviours
-import com.github.xuankaicat.xhys.mysql.model.BlackFood
+import com.github.xuankaicat.xhys.model.BlackFood
 import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.utils.BotConfiguration

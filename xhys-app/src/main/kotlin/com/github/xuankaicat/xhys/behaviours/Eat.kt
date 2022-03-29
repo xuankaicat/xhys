@@ -3,7 +3,7 @@ package com.github.xuankaicat.xhys.behaviours
 import com.github.xuankaicat.xhys.XhysMiraiBot
 import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
-import com.github.xuankaicat.xhys.mysql.model.User
+import com.github.xuankaicat.xhys.model.User
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages

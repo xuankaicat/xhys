@@ -1,8 +1,8 @@
-package com.github.xuankaicat.xhys.mysql.model
+package com.github.xuankaicat.xhys.model
 
-import com.github.xuankaicat.xhys.mysql.DataMysql
-import com.github.xuankaicat.xhys.mysql.IObjectMysql
-import com.github.xuankaicat.xhys.mysql.model.Rule.Companion.parseRule
+import com.github.xuankaicat.xhys.core.mysql.DataMysql
+import com.github.xuankaicat.xhys.core.mysql.IObjectMysql
+import com.github.xuankaicat.xhys.model.Rule.Companion.parseRule
 
 class Group : IObjectMysql, IRuleObject {
     var id : Int = 0

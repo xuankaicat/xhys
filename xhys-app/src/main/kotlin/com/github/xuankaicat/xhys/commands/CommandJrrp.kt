@@ -2,7 +2,7 @@ package com.github.xuankaicat.xhys.commands
 
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CommandMgr
-import com.github.xuankaicat.xhys.mysql.model.User
+import com.github.xuankaicat.xhys.model.User
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.PlainText
 import java.time.LocalDate

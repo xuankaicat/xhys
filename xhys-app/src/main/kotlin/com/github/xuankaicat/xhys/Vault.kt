@@ -1,7 +1,7 @@
 package com.github.xuankaicat.xhys
 
-import com.github.xuankaicat.xhys.mysql.DataMysql
-import com.github.xuankaicat.xhys.mysql.model.User
+import com.github.xuankaicat.xhys.core.mysql.DataMysql
+import com.github.xuankaicat.xhys.core.mysql.model.User
 
 /**
  * 用户交易操作的类

@@ -1,8 +1,8 @@
-package com.github.xuankaicat.xhys.mysql.model
+package com.github.xuankaicat.xhys.model
 
-import com.github.xuankaicat.xhys.mysql.DataMysql
-import com.github.xuankaicat.xhys.mysql.IObjectMysql
-import com.github.xuankaicat.xhys.mysql.enums.CardRarity
+import com.github.xuankaicat.xhys.core.mysql.DataMysql
+import com.github.xuankaicat.xhys.core.mysql.IObjectMysql
+import com.github.xuankaicat.xhys.enums.CardRarity
 
 open class Card : IObjectMysql {
     var id : Int = 0

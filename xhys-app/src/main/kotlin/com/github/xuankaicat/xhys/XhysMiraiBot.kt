@@ -1,7 +1,7 @@
 package com.github.xuankaicat.xhys
 
 import com.github.xuankaicat.xhys.core.IXhysBot
-import com.github.xuankaicat.xhys.mysql.model.Group
+import com.github.xuankaicat.xhys.model.Group
 import net.mamoe.mirai.Bot
 
 object XhysMiraiBot : IXhysBot {

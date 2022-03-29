@@ -1,4 +1,4 @@
-package com.github.xuankaicat.xhys.mysql.model
+package com.github.xuankaicat.xhys.model
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.PROPERTY)

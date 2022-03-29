@@ -3,8 +3,8 @@ package com.github.xuankaicat.xhys.commands
 import com.github.xuankaicat.xhys.XhysMiraiBot
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.managers.CommandMgr
-import com.github.xuankaicat.xhys.mysql.model.Rule
-import com.github.xuankaicat.xhys.mysql.model.RuleDescription
+import com.github.xuankaicat.xhys.core.mysql.model.Rule
+import com.github.xuankaicat.xhys.model.RuleDescription
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.isAdministrator

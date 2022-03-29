@@ -1,7 +1,6 @@
 package com.github.xuankaicat.xhys.behaviours
 
 import com.github.xuankaicat.xhys.XhysMiraiBot
-import com.github.xuankaicat.xhys.behaviours.Eat.eat
 import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.ksp.annotation.Command
@@ -50,7 +49,7 @@ object Repeat {
             val group = XhysMiraiBot.groupList.first { it.groupId == source.subject.id }
             return if(value != group.repeat){
                 group.repeat = value
-                com.github.xuankaicat.xhys.mysql.model.Group.updateRepeat(source.subject.id, value)
+                com.github.xuankaicat.xhys.model.Group.updateRepeat(source.subject.id, value)
                 PlainText((when(value){
                     0->"小黄..小黄闭嘴就是了。"
                     100->"小黄勇士已将复读功率调整至峰值！"

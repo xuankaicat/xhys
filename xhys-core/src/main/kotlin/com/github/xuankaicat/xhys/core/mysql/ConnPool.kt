@@ -1,4 +1,4 @@
-package com.github.xuankaicat.xhys.mysql
+package com.github.xuankaicat.xhys.core.mysql
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
