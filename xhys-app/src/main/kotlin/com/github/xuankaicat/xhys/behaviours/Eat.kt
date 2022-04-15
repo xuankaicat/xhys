@@ -4,6 +4,7 @@ import com.github.xuankaicat.xhys.XhysMiraiBot
 import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.model.User
+import com.github.xuankaicat.xhys.utils.senderId
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
@@ -16,13 +17,9 @@ object Eat {
         apply {
             miraiBot.eventChannel.subscribeMessages {
                 always {
-                    val id: Long
-                    if (subject is Group) {
-                        id = source.targetId
-                        if(!groupList.first{it.groupId == source.targetId}.ruleObj.responseEatKeyword) return@always
-                    } else {
-                        id = source.fromId
-                    }
+                    val id = senderId {
+                        groupList.first{it.groupId == source.targetId}.ruleObj.responseEatKeyword
+                    } ?: return@always
                     val msg = message[1].toString()
                     if (msg.startsWith("吃")) {
                         if(msg == "吃什么"){
@@ -39,13 +36,9 @@ object Eat {
                     }
                 }
                 contains("吃") {
-                    val id: Long
-                    if (subject is Group) {
-                        id = source.targetId
-                        if(!groupList.first{it.groupId == source.targetId}.ruleObj.responseEatKeyword) return@contains
-                    } else {
-                        id = source.fromId
-                    }
+                    val id = senderId {
+                        groupList.first{it.groupId == source.targetId}.ruleObj.responseEatKeyword
+                    } ?: return@contains
                     if (!message[1].toString().startsWith("吃")) {
                         when((1..5).random()){
                             1->this.javaClass.getResourceAsStream("/吃啥呢.jpg")!!.sendAsImageTo(subject)

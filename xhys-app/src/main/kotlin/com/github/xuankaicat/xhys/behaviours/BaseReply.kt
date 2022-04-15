@@ -17,9 +17,9 @@ fun IXhysBot.baseReply(){
 
 fun powerReply(message : MessageEvent): String{
     message.apply {
-        when(subject){
-            is Group-> return " ${(sender as Member).nameCard}power!"
-            else-> return " ${sender.nick}power!"
+        return when(subject){
+            is Group-> " ${(sender as Member).nameCard}power!"
+            else-> " ${sender.nick}power!"
         }
     }
 }

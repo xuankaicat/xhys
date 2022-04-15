@@ -3,6 +3,7 @@ package com.github.xuankaicat.xhys.behaviours
 import com.github.xuankaicat.xhys.XhysMiraiBot
 import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
+import com.github.xuankaicat.xhys.utils.senderId
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.message.data.At
@@ -11,15 +12,11 @@ import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
 @Behaviour
 fun IXhysBot.atEvent(){
     this as XhysMiraiBot
-        miraiBot.eventChannel.subscribeMessages {
+    miraiBot.eventChannel.subscribeMessages {
         atBot {
-            val id: Long
-            if (subject is Group) {
-                id = source.targetId
-                if(!groupList.first{it.groupId == source.targetId}.ruleObj.responseAtEvent) return@atBot
-            } else {
-                id = source.fromId
-            }
+            val id = senderId {
+                groupList.first{it.groupId == source.targetId}.ruleObj.responseAtEvent
+            } ?: return@atBot
             when(message[2].toString().trim()){
                 "小黄勇士power！","小黄勇士power!"-> subject.sendMessage(At(sender as Member) + powerReply(this))
                 "滚","爬","sb","爪巴"->{
