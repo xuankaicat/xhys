@@ -8,7 +8,7 @@ import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.event.EventPriority
 
 @Behaviour
-fun IXhysBot.initExistingUsers(){
+fun IXhysBot.userListInit(){
     this as XhysMiraiBot
     miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
         (startsWith(".") or startsWith("。")) {

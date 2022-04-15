@@ -7,7 +7,7 @@ import com.github.xuankaicat.xhys.model.Group
 import net.mamoe.mirai.event.events.BotJoinGroupEvent
 
 @Behaviour
-fun IXhysBot.initExistingGroup(){
+fun IXhysBot.groupListInit(){
     this as XhysMiraiBot
     //启动时初始化已有群组
     groupList = Group.all()
