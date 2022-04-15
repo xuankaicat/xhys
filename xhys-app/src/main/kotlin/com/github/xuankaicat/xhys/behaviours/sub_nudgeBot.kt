@@ -9,15 +9,12 @@ import net.mamoe.mirai.event.events.NudgeEvent
 
 @Behaviour
 fun IXhysBot.nudgeBot(){
-    this as XhysMiraiBot
-    apply {
-        miraiBot.eventChannel.subscribeAlways<NudgeEvent> {
-            if(from != bot && target == bot){
-                if(from is Member){
-                    from.nudge().sendTo((from as Member).group)
-                }else{
-                    from.nudge().sendTo(from as Contact)
-                }
+    miraiBot.eventChannel.subscribeAlways<NudgeEvent> {
+        if(from != bot && target == bot){
+            if(from is Member){
+                from.nudge().sendTo((from as Member).group)
+            }else{
+                from.nudge().sendTo(from as Contact)
             }
         }
     }

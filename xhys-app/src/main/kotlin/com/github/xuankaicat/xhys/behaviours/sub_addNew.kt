@@ -12,25 +12,22 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 @Behaviour
 fun IXhysBot.addNew(){
-    this as XhysMiraiBot
-    apply {
-        miraiBot.globalEventChannel().subscribeAlways(
-            NewFriendRequestEvent::class,
-            EmptyCoroutineContext,
-            ConcurrencyKind.CONCURRENT,
-            EventPriority.NORMAL
-        ) {
-            if (fromGroup != null) {
-                accept()
-            }
-        }
-        miraiBot.globalEventChannel().subscribeAlways(
-            BotInvitedJoinGroupRequestEvent::class,
-            EmptyCoroutineContext,
-            ConcurrencyKind.CONCURRENT,
-            EventPriority.NORMAL
-        ) {
+    miraiBot.globalEventChannel().subscribeAlways(
+        NewFriendRequestEvent::class,
+        EmptyCoroutineContext,
+        ConcurrencyKind.CONCURRENT,
+        EventPriority.NORMAL
+    ) {
+        if (fromGroup != null) {
             accept()
         }
+    }
+    miraiBot.globalEventChannel().subscribeAlways(
+        BotInvitedJoinGroupRequestEvent::class,
+        EmptyCoroutineContext,
+        ConcurrencyKind.CONCURRENT,
+        EventPriority.NORMAL
+    ) {
+        accept()
     }
 }

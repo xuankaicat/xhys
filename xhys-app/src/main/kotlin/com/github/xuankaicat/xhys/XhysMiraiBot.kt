@@ -8,9 +8,9 @@ object XhysMiraiBot : IXhysBot {
     val lastMsg = HashMap<Long, String>()
     var eatTimer = 0
 
-    val registeredqqId = ArrayList<Long>()
+    val registeredQQid = ArrayList<Long>()
     lateinit var groupList : ArrayList<Group>
     var foodBlackList = ArrayList<String>()
 
-    lateinit var miraiBot : Bot
+    override lateinit var miraiBot : Bot
 }

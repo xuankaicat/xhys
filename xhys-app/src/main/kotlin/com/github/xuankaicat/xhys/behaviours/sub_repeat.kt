@@ -15,17 +15,15 @@ object Repeat {
     @Behaviour
     fun IXhysBot.repeater(){
         this as XhysMiraiBot
-        apply {
-            miraiBot.eventChannel.subscribeAlways<GroupMessageEvent>(priority = EventPriority.LOW) {
-                val droppedMessage = message.drop(1).toString()
-                val groupId = source.subject.id
-                if(droppedMessage == lastMsg[groupId]
-                    && groupList.first { it.groupId == groupId }.repeat >= (1..100).random()){
-                    subject.sendMessage(message)
-                    lastMsg.remove(groupId)
-                }else{
-                    lastMsg[groupId] = droppedMessage
-                }
+        miraiBot.eventChannel.subscribeAlways<GroupMessageEvent>(priority = EventPriority.LOW) {
+            val droppedMessage = message.drop(1).toString()
+            val groupId = source.subject.id
+            if(droppedMessage == lastMsg[groupId]
+                && groupList.first { it.groupId == groupId }.repeat >= (1..100).random()){
+                subject.sendMessage(message)
+                lastMsg.remove(groupId)
+            }else{
+                lastMsg[groupId] = droppedMessage
             }
         }
     }

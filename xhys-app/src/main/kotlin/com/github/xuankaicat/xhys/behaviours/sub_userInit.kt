@@ -10,15 +10,13 @@ import net.mamoe.mirai.event.EventPriority
 @Behaviour
 fun IXhysBot.initExistingUsers(){
     this as XhysMiraiBot
-    apply {
-        miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
-            (startsWith(".") or startsWith("。")) {
-                val qqId = source.fromId
-                if(!registeredqqId.contains(qqId)){
-                    if(!User.exist(qqId))
-                        User.insert(qqId)
-                    registeredqqId.add(qqId)
-                }
+    miraiBot.eventChannel.subscribeMessages(priority = EventPriority.HIGHEST) {
+        (startsWith(".") or startsWith("。")) {
+            val qqId = source.fromId
+            if(!registeredQQid.contains(qqId)){
+                if(!User.exist(qqId))
+                    User.insert(qqId)
+                registeredQQid.add(qqId)
             }
         }
     }

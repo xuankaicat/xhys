@@ -10,12 +10,9 @@ import net.mamoe.mirai.event.subscribeMessages
 
 @Behaviour
 fun IXhysBot.baseReply(){
-    this as XhysMiraiBot
-    apply {
-        miraiBot.eventChannel.subscribeMessages {
-            "小黄勇士power！" reply { powerReply(this) }
-            "小黄勇士power!" reply { powerReply(this) }
-        }
+    miraiBot.eventChannel.subscribeMessages {
+        "小黄勇士power！" reply { powerReply(this) }
+        "小黄勇士power!" reply { powerReply(this) }
     }
 }
 
