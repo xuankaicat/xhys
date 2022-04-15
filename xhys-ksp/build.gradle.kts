@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     id("com.google.devtools.ksp")
+    id("com.github.gmazzo.buildconfig")
 }
 
 dependencies {
@@ -17,6 +18,11 @@ dependencies {
     compileOnly(kotlin("compiler-embeddable"))
     // https://mvnrepository.com/artifact/com.google.devtools.ksp/symbol-processing-api
     compileOnly("com.google.devtools.ksp:symbol-processing-api:1.6.20-1.0.4")
+}
+
+buildConfig {
+    packageName("$group.${project.name.split("-")[1]}")
+    buildConfigField("String", "PACKAGE_NAME", "\"$group.ksp.generated\"")
 }
 
 sourceSets.main {

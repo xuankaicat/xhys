@@ -29,7 +29,7 @@ class BehaviourProcessor(
     var invoked = false
 
     val fileSpec = FileSpec.builder(
-        packageName =  "com.github.xuankaicat.xhys.ksp.generated",//BuildConfig.PACKAGE_NAME
+        packageName =  BuildConfig.PACKAGE_NAME,
         fileName = "Behaviour"
     )
 
@@ -49,7 +49,7 @@ class BehaviourProcessor(
 
         codeGenerator.createNewFile(
             dependencies = Dependencies(aggregating = true),
-            packageName = "com.github.xuankaicat.xhys.ksp.generated",
+            packageName = BuildConfig.PACKAGE_NAME,
             fileName = "Behaviour"
         ).use { outputStream ->
             outputStream.writer()
