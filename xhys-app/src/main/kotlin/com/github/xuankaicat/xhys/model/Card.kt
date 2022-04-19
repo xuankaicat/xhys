@@ -32,7 +32,7 @@ open class Card : IObjectMysql {
     companion object {
         fun all() = DataMysql.query<Card>("select * from card")
 
-        fun where(str: String) = DataMysql.query<Card>("select * from card where ${str}")
+        fun where(str: String) = DataMysql.query<Card>("select * from card where $str")
 
         fun find(id : Int) = DataMysql.query<Card>("select * from card where id=${id}").firstOrNull()
 

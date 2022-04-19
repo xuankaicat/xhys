@@ -5,7 +5,6 @@ import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.model.User
 import com.github.xuankaicat.xhys.utils.senderId
-import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.event.subscribeMessages
 import net.mamoe.mirai.utils.ExternalResource.Companion.sendAsImageTo
