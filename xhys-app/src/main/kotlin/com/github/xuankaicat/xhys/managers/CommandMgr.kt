@@ -503,7 +503,7 @@ object CommandMgr {
             val makeFunc = makeFunc@{ rarity: CardRarity, cost: Long ->
                 metaCost = amount * 80
                 if(User.find(user.qqId).material < metaCost)
-                    return@makeFunc PlainText("${name},你根本没有那么多材料！每个${rarity.type}制造需要${cost}个材料！")
+                    return@makeFunc PlainText("${name},你根本没有那么多材料！每个${rarity.name}制造需要${cost}个材料！")
 
                 for (i in 0 until amount) {
                     if((1..10).random() == 1) {
