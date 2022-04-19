@@ -10,7 +10,9 @@ import com.github.xuankaicat.xhys.core.IXhysBot
 import com.github.xuankaicat.xhys.ksp.annotation.Behaviour
 import com.github.xuankaicat.xhys.ksp.annotation.Command
 import com.github.xuankaicat.xhys.core.mysql.DataMysql
+import com.github.xuankaicat.xhys.enums.CardRarity
 import com.github.xuankaicat.xhys.enums.CardRarity.*
+import com.github.xuankaicat.xhys.managers.CardMgr.randomCard
 import com.github.xuankaicat.xhys.model.BlackFood
 import com.github.xuankaicat.xhys.model.Card
 import com.github.xuankaicat.xhys.model.CardBackpack
@@ -495,59 +497,34 @@ object CommandMgr {
             val cardId = args[0].toInt()
             val card = Card.find(cardId)
             val amount = if (args.size == 2) args[1].toLong() else 1
-            val metaCost: Long
+            var metaCost: Long = -1
             val byCard = ArrayList<Card>()
-            when (card?.rarity) {
-                R -> {
-                    metaCost = amount * 80
-                    if(User.find(user.qqId).material < metaCost) return PlainText("${name},你根本没有那么多材料！每个R制造需要80个材料！")
 
-                    for (i in 0 until amount) {
-                        if((1..10).random() == 1) {
-                            val rdCard = CardMgr.getRandomR()
-                            byCard.add(rdCard)
-                            CardBackpack.userGetNewCard(user.qqId, rdCard.id)
-                        }
+            val makeFunc = makeFunc@{ rarity: CardRarity, cost: Long ->
+                metaCost = amount * 80
+                if(User.find(user.qqId).material < metaCost)
+                    return@makeFunc PlainText("${name},你根本没有那么多材料！每个${rarity.type}制造需要${cost}个材料！")
+
+                for (i in 0 until amount) {
+                    if((1..10).random() == 1) {
+                        val rdCard = rarity.randomCard()
+                        byCard.add(rdCard)
+                        CardBackpack.userGetNewCard(user.qqId, rdCard.id)
                     }
                 }
-                SR -> {
-                    metaCost = amount * 100
-                    if(User.find(user.qqId).material < metaCost) return PlainText("${name},你根本没有那么多材料！每个SR制造需要100个材料！")
-
-                    for (i in 0 until amount) {
-                        if((1..10).random() == 1) {
-                            val rdCard = CardMgr.getRandomSR()
-                            byCard.add(rdCard)
-                            CardBackpack.userGetNewCard(user.qqId, rdCard.id)
-                        }
-                    }
-                }
-                SSR -> {
-                    metaCost = amount * 300
-                    if(User.find(user.qqId).material < metaCost) return PlainText("${name},你根本没有那么多材料！每个SSR制造需要300个材料！")
-
-                    for (i in 0..amount) {
-                        if((1..10).random() == 1) {
-                            val rdCard = CardMgr.getRandomSSR()
-                            byCard.add(rdCard)
-                            CardBackpack.userGetNewCard(user.qqId, rdCard.id)
-                        }
-                    }
-                }
-                UR -> {
-                    metaCost = amount * 3000
-                    if(User.find(user.qqId).material < metaCost) return PlainText("${name},你根本没有那么多材料！每个UR制造需要3000个材料！")
-
-                    for (i in 0..amount) {
-                        if((1..4).random() == 1) {
-                            val rdCard = CardMgr.getRandomSSR()
-                            byCard.add(rdCard)
-                            CardBackpack.userGetNewCard(user.qqId, rdCard.id)
-                        }
-                    }
-                }
-                null -> return PlainText("${name},我根本不知道你在说什么！")
+                return@makeFunc null
             }
+
+            when (card?.rarity) {
+                R -> makeFunc(R, 80)
+                SR -> makeFunc(SR, 100)
+                SSR -> makeFunc(SSR, 300)
+                UR -> makeFunc(SSR, 3000)
+                null -> return PlainText("${name},我根本不知道你在说什么！")
+            }?.let {
+                return it
+            }
+
             CardBackpack.userGetNewCard(user.qqId, card.id, amount)
             Vault.subMaterial(user.qqId, metaCost)
             var text: Message = PlainText("${name},你成功使用 $metaCost 个材料制造了 $amount 个 ${card.name}！")

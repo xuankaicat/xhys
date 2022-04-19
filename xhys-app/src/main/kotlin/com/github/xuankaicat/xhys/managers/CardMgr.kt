@@ -135,6 +135,12 @@ object CardMgr {
             }
         }
 
+    fun CardRarity.randomCard() = when(this) {
+        R -> getRandomR()
+        SR -> getRandomSR()
+        SSR -> getRandomSSR()
+        UR -> getRandomSSR()
+    }
     fun getRandomR() = RCardPool.random()
     fun getRandomSR() = SRCardPool.random()
     fun getRandomSPSR(pool: String) = SPCardPool[pool+"SR"]?.random() ?: SRCardPool.random()
